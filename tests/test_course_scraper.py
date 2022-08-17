@@ -19,11 +19,11 @@ def course_obj(request):
     ('https://codewithmosh.com/courses/enrolled/580597', True)
 ])
 def test_course_is_valid(course_url: str, expected: bool):
-    assert Course(course_url).is_valid() == expected
+    assert Course(course_url).is_valid_url() == expected
 
 
 def test_get_course_name(course_obj: Course):
-    course_name = course_obj.get_course_name()
+    course_name = course_obj.get_name()
     assert course_name and not course_name.isspace()
 
 
