@@ -43,23 +43,23 @@ def handle_network_errors(func: Callable):
             return func(*args, **kwargs)
         except rqexceptions.SSLError:
             render_message('error', 'SSL error occured retrying...')
-            func(*args, **kwargs)
+            decorated_func(*args, **kwargs)
         except rqexceptions.Timeout:
             render_message('error', 'Server timed out retrying...')
             sleep(5)
-            func(*args, **kwargs)
+            decorated_func(*args, **kwargs)
         except rqexceptions.ConnectionError:
             render_message('error', 'Connenction error. [green]Try Checking your internet connection.')
             sleep(5)
-            func(*args, **kwargs)
+            decorated_func(*args, **kwargs)
         except gaierror as error:
             render_message('error', f'Network error retrying...')
             render_message('error', str(error))
             sleep(5)
-            func(*args, **kwargs)
+            decorated_func(*args, **kwargs)
         except Exception as error:
             render_message('error', 'Unknown error occured retrying...')
             render_message('error', str(error))
             sleep(5)
-            func(*args, **kwargs)
+            decorated_func(*args, **kwargs)
     return decorated_func
