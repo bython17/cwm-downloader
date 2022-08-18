@@ -9,7 +9,8 @@ class Lecture(Scraper):
         return ['something']
 
     def get_name(self) -> str:
-        return 'something'
+        lecture_name = self.select_element(self.element_selectors.lecture_names, single=True)
+        return lecture_name.get_text(strip=True)
 
-    def get_lecture_type(self) -> LectureType:
-        return 'video'
+    def get_type(self) -> bool:
+        pass

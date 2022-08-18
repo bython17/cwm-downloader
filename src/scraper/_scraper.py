@@ -1,6 +1,6 @@
 import requests
 from abc import ABC, abstractmethod
-from bs4 import BeautifulSoup, ResultSet
+from bs4 import BeautifulSoup
 from src.utils import handle_network_errors
 from src.scraper.element_selectors import ElementSelectors
 
@@ -33,7 +33,7 @@ class Scraper(ABC):
             tag_list_or_tag = self.soup.select(selector) if not single else self.soup.select_one(selector)
             if tag_list_or_tag:
                 return tag_list_or_tag
-        raise ElementNotFound('The specified selector is invalid!, The site might be updated..')
+        raise ElementNotFound('The specified selector is invalid!, The site might be updated...')
 
     @property
     def url(self):
@@ -59,3 +59,6 @@ class Scraper(ABC):
     @abstractmethod
     def get_name(self) -> str:
         pass
+
+    def __str__(self):
+        return self.get_name()
