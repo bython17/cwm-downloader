@@ -12,3 +12,8 @@ lecture_urls = [
 @pytest.fixture(scope="function", params=lecture_urls)
 def lecture_obj(request, request_session):
     return Lecture(request.param, request_session)
+
+
+def test_get_course_name(lecture_obj):
+    assert lecture_obj.get_name() != ''
+    assert not lecture_obj.get_name().isspace()

@@ -22,12 +22,6 @@ def initialize_session():
     session.headers = CaseInsensitiveDict(headers)
     return session
 
-
-def get_element_selectors(json_filepath: str = './scraper') -> dict[str, list[str]]:
-    with open(f"{json_filepath}/element_selectors.json", 'r') as file:
-        return loads(file.read())
-
-
 def render_message(message_type: Literal['info', 'warning', 'error'], message: str, question=False):
     message_color = message_type_color[message_type]
     display_message = f"{message_color}{message_type.upper()} [white]{message}"

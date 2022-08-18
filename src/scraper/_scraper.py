@@ -1,31 +1,39 @@
 import requests
 from abc import ABC, abstractmethod
-from bs4 import BeautifulSoup
-from src.utils import get_element_selectors, handle_network_errors
+from bs4 import BeautifulSoup, ResultSet
+from src.utils import handle_network_errors
+from src.scraper.element_selectors import ElementSelectors
 
 
 class IncorrectUrl(Exception):
     pass
 
 
+class ElementNotFound(Exception):
+    pass
+
+
 class Scraper(ABC):
     base_url = "https://codewithmosh.com/courses"
+    element_selectors = ElementSelectors
 
     def __init__(self, url: str, request_session: requests.Session, timeout: int = 60):
         self.url = url
         self.timeout = timeout
-        self.soup = self.make_soup(request_session)
-        self.request_session = request_session
+        self.session = request_session
+        self.soup = self.make_soup()
 
     @handle_network_errors
-    def make_soup(self, session):
-        content = session.get(self.url)
+    def make_soup(self):
+        content = self.session.get(self.url, timeout=self.timeout)
         return BeautifulSoup(content.content, 'html.parser')
 
-    @property
-    def ELEMENT_SELECTORS(self):
-        self.element_selectors = get_element_selectors()
-        return self.element_selectors
+    def select_element(self, element: ElementSelectors, single: bool = False):
+        for selector in element.value:
+            tag_list_or_tag = self.soup.select(selector) if not single else self.soup.select_one(selector)
+            if tag_list_or_tag:
+                return tag_list_or_tag
+        raise ElementNotFound('The specified selector is invalid!, The site might be updated..')
 
     @property
     def url(self):

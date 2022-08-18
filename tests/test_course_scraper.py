@@ -28,3 +28,7 @@ def test_is_validate_url_fails(request_session):
 def test_is_validate_url_passes(course_url: str, expected: str, request_session):
     url = Course(course_url, request_session).url
     assert url == expected
+
+def test_get_course_name(course_obj):
+    assert course_obj.get_name() != ''
+    assert not course_obj.get_name().isspace()
