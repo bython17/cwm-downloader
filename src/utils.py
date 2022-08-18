@@ -1,5 +1,6 @@
 from time import sleep
 from typing import Callable, Literal
+from requests.structures import CaseInsensitiveDict
 from requests.utils import cookiejar_from_dict
 from requests import Session, exceptions as rqexceptions
 from socket import gaierror
@@ -18,7 +19,7 @@ message_type_color = {
 def initialize_session():
     session = Session()
     session.cookies = cookiejar_from_dict(cookies)
-    session.headers = headers
+    session.headers = CaseInsensitiveDict(headers)
     return session
 
 
@@ -53,12 +54,12 @@ def handle_network_errors(func: Callable):
             func(*args, **kwargs)
         except gaierror as error:
             render_message('error', f'Network error retrying...')
-            render_message('error', error)
+            render_message('error', str(error))
             sleep(5)
             func(*args, **kwargs)
         except Exception as error:
             render_message('error', 'Unknown error occured retrying...')
-            render_message('', error)
+            render_message('error', str(error))
             sleep(5)
-            func(*args, **args)
+            func(*args, **kwargs)
     return decorated_func

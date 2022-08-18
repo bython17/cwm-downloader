@@ -10,7 +10,7 @@ course_urls = [
 ]
 
 
-@pytest.fixture(scope="module", params=course_urls)
+@pytest.fixture(scope="function", params=course_urls)
 def course_obj(request, request_session):
     return Course(request.param, request_session)
 
