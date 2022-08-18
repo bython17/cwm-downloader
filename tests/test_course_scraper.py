@@ -1,8 +1,9 @@
 from src.scraper.course_scraper import Course
+from src.scraper._scraper import IncorrectUrl
 import pytest
 
 course_urls = [
-    'https://codewithmosh.com/courses/enrolled/783424/',  # Redux Course
+    'https://codewithmosh.com/courses/enrolled/783424',  # Redux Course
     'https://codewithmosh.com/courses/enrolled/1857029',  # C++ Course
     'https://codewithmosh.com/courses/enrolled/357787',  # React Course
     'https://codewithmosh.com/courses/enrolled/580597',  # Java Course
@@ -10,23 +11,20 @@ course_urls = [
 
 
 @pytest.fixture(scope="module", params=course_urls)
-def course_obj(request):
-    return Course(request.param)
+def course_obj(request, request_session):
+    return Course(request.param, request_session)
+
+
+def test_is_validate_url_fails(request_session):
+    with pytest.raises(IncorrectUrl):
+        Course('https://afakewebsite/enrolled/invalid', request_session)
 
 
 @pytest.mark.parametrize('course_url, expected', [
-    ('https://codewithmosh.com/courses/enrolled/invalid', False),
-    ('https://codewithmosh.com/courses/enrolled/580597', True)
+    ('https://codewithmosh.com/courses/enrolled/580597', 'https://codewithmosh.com/courses/580597'),
+    ('https://code withmosh.com/ courses/e nrolled/580597', 'https://codewithmosh.com/courses/580597'),
+    ('https://codewithmosh.com/courses/580597/', 'https://codewithmosh.com/courses/580597')
 ])
-def test_course_is_valid(course_url: str, expected: bool):
-    assert Course(course_url).is_valid_url() == expected
-
-
-def test_get_course_name(course_obj: Course):
-    course_name = course_obj.get_name()
-    assert course_name and not course_name.isspace()
-
-
-def test_get_lectures(course_obj: Course):
-    lectures = course_obj.get_lectures()
-    assert len(lectures)
+def test_is_validate_url_passes(course_url: str, expected: str, request_session):
+    url = Course(course_url, request_session).url
+    assert url == expected

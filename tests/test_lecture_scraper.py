@@ -9,14 +9,6 @@ lecture_urls = [
 ]
 
 
-@pytest.mark.parametrize('lecture_url, expected', [
-    ('https://codewithmosh.com/courses/783424/lectures/invalid', False),
-    ('https://codewithmosh.com/courses/783424/lectures/14779988', True)
-])
-def test_lecture_is_valid(lecture_url: str, expected: bool):
-    assert Lecture(lecture_url).is_valid() == expected
-
-
-@pytest.fixture(scope="module", params=lecture_urls)
-def lecture_obj(request):
-    return Lecture(request.param)
+@pytest.fixture(scope="function", params=lecture_urls)
+def lecture_obj(request, request_session):
+    return Lecture(request.param, request_session)

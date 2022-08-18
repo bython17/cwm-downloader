@@ -13,6 +13,3 @@ class Lecture(Scraper):
 
     def get_lecture_type(self) -> LectureType:
         return 'video'
-
-    def is_valid_url(self) -> bool:
-        return True

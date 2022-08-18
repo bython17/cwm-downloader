@@ -1,15 +1,26 @@
+import requests
 from abc import ABC, abstractmethod
 from bs4 import BeautifulSoup
-from src.utils import get_element_selectors
+from src.utils import get_element_selectors, handle_network_errors
 
 
-class UrlNotFoundError(Exception):
+class IncorrectUrl(Exception):
     pass
 
 
 class Scraper(ABC):
-    def __init__(self, url: str, timeout: int = 60):
+    base_url = "https://codewithmosh.com/courses"
+
+    def __init__(self, url: str, request_session: requests.Session, timeout: int = 60):
         self.url = url
+        self.timeout = timeout
+        self.soup = self.make_soup(request_session)
+        self.request_session = request_session
+
+    @handle_network_errors
+    def make_soup(self, session):
+        content = session.get(self.url)
+        return BeautifulSoup(content.content, 'html.parser')
 
     @property
     def ELEMENT_SELECTORS(self):
@@ -22,13 +33,20 @@ class Scraper(ABC):
 
     @url.setter
     def url(self, new_url):
-        if not self.is_valid_url():
-            raise UrlNotFoundError(f'{new_url} is not found')
-        self.__url = new_url
+        self.__url = self.validate_url(new_url)
+        if not self.__url:
+            raise (IncorrectUrl(f'{new_url} is not mosh\'s url.'))
 
-    @abstractmethod
-    def is_valid_url(self) -> bool:
-        pass
+    def validate_url(self, url: str) -> str | bool:
+        url = url.replace(' ', '')
+        # check if it is mosh's website
+        if self.base_url not in url:
+            return False
+        # fix the url
+        url = url.replace('/enrolled', '')
+        if url.endswith('/'):
+            url = url[:len(url)-1]
+        return url
 
     @abstractmethod
     def get_name(self) -> str:
