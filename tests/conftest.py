@@ -1,5 +1,3 @@
-from mimetypes import init
-import requests
 import pytest
 from src.utils import initialize_session
 
