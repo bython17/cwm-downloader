@@ -8,6 +8,29 @@ from json import loads
 from functools import wraps
 from src.credentials import headers, cookies
 from rich import print as rprint
+from rich.progress import (
+    BarColumn,
+    DownloadColumn,
+    Progress,
+    TextColumn,
+    TimeRemainingColumn,
+    TransferSpeedColumn,
+)
+
+
+def get_progress_bar():
+    return Progress(
+        TextColumn("[bold blue]{task.fields[filename]}", justify="right"),
+        BarColumn(bar_width=None),
+        "[progress.percentage]{task.percentage:>3.1f}%",
+        "•",
+        DownloadColumn(),
+        "•",
+        TransferSpeedColumn(),
+        "•",
+        TimeRemainingColumn(),
+    )
+
 
 message_type_color = {
     'info': '[bold green]',
@@ -21,6 +44,7 @@ def initialize_session():
     session.cookies = cookiejar_from_dict(cookies)
     session.headers = CaseInsensitiveDict(headers)
     return session
+
 
 def render_message(message_type: Literal['info', 'warning', 'error'], message: str, question=False):
     message_color = message_type_color[message_type]
