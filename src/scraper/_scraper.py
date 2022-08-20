@@ -1,15 +1,15 @@
 import requests
 from abc import ABC, abstractmethod
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 from src.utils import handle_network_errors
 from src.scraper.element_selectors import ElementSelectors
 
 
-class IncorrectUrl(Exception):
+class IncorrectUrlError(Exception):
     pass
 
 
-class ElementNotFound(Exception):
+class ElementNotFoundError(Exception):
     pass
 
 
@@ -21,29 +21,37 @@ class Scraper(ABC):
         self.url = url
         self.timeout = timeout
         self.session = request_session
-        self.soup = self.make_soup()
+        self.__soup = None
+
+    @property
+    def soup(self):
+        if self.__soup is None:
+            self.__soup = self.make_soup()
+        return self.__soup
 
     @handle_network_errors
     def make_soup(self):
         content = self.session.get(self.url, timeout=self.timeout)
         return BeautifulSoup(content.content, 'html.parser')
 
-    def select_element(self, element: ElementSelectors, single: bool = False):
+    def select_element(self, element: ElementSelectors, source: Tag | BeautifulSoup | None = None, single: bool = False, raise_if_not_found: bool = True):
+        source = source if source is not None else self.soup
         for selector in element.value:
-            tag_list_or_tag = self.soup.select(selector) if not single else self.soup.select_one(selector)
+            tag_list_or_tag = list(source.select(selector)) if not single else source.select_one(selector)
             if tag_list_or_tag:
                 return tag_list_or_tag
-        raise ElementNotFound('The specified selector is invalid!, The site might be updated...')
+        if raise_if_not_found:
+            raise ElementNotFoundError(f'The element with the selector ({selector}) is invalid!, The site might be updated...')
 
     @property
     def url(self):
         return self.__url
 
     @url.setter
-    def url(self, new_url):
+    def url(self, new_url: str):
         self.__url = self.validate_url(new_url)
         if not self.__url:
-            raise (IncorrectUrl(f'{new_url} is not mosh\'s url.'))
+            raise (IncorrectUrlError(f'{new_url} is not mosh\'s url.'))
 
     def validate_url(self, url: str) -> str | bool:
         url = url.replace(' ', '')
