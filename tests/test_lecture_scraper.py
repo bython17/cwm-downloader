@@ -1,5 +1,6 @@
 from typing import Any, Dict
-from src.scraper.lecture_scraper import Lecture
+from xxlimited import Str
+from src.scraper.lecture_scraper import Lecture, LectureType
 import pytest
 
 testing_urls: Dict[str, Dict[str, Any]] = {
@@ -30,14 +31,14 @@ testing_urls: Dict[str, Dict[str, Any]] = {
     },  # React Course text
     'https://codewithmosh.com/courses/783424/lectures/14779974': {
         'downloadables': {'5- Setting Up the Development Environment.mp4': 'https://cdn.fs.teachablecdn.com/vsdryTMASqYUgPm4nMRQ', 'Source Code.zip': 'https://cdn.fs.teachablecdn.com/wr9x3CGyQb2zk5nCObT5'},
-        'resource_name': '5- Source Code.zip',
+        'resource_name': '5- resource_Source Code.zip',
         'name': '5- Setting Up the Development Environment',
         'number': '5',
         'type': 'video'
     },  # Redux coure 5 (resource within a video)
     'https://codewithmosh.com/courses/ultimate-c-plus-plus-part1/lectures/42187134': {
         'downloadables': {'1- Getting Started with C++.pdf': 'https://cdn.fs.teachablecdn.com/vlVGa4CsQzKmJbDhgoUw'},
-        'resource_name': '6- Getting Started with C++.pdf',
+        'resource_name': '6- resource_Getting Started with C++.pdf',
         'name': '6- Summary',
         'number': '6',
         'type': 'text'
@@ -53,12 +54,35 @@ def lecture_obj(request, request_session):
 @pytest.mark.parametrize('lecture_obj, expected', [
     (url, details['name']) for url, details in testing_urls.items()
 ], indirect=['lecture_obj'])
-def test_get_name(lecture_obj, expected):
+def test_get_name(lecture_obj: Lecture, expected: str):
     assert str(lecture_obj) == expected
 
 
 @pytest.mark.parametrize('lecture_obj, expected', [
     (url, details['downloadables']) for url, details in testing_urls.items()
 ], indirect=['lecture_obj'])
-def test_get_download_names_and_urls(lecture_obj, expected):
+def test_get_download_names_and_urls(lecture_obj: Lecture, expected: Dict[str, str] | None):
     assert lecture_obj.get_download_names_and_urls() == expected
+
+
+@pytest.mark.parametrize('lecture_obj, expected', [
+    (url, details['number']) for url, details in testing_urls.items()
+], indirect=['lecture_obj'])
+def test_get_lecture_number(lecture_obj: Lecture, expected: str | None):
+    assert lecture_obj.get_lecture_number() == expected
+
+
+@pytest.mark.parametrize('lecture_obj, downloadables, expected', [
+    (url, details['downloadables'], details['resource_name']) for url, details in testing_urls.items() if 'resource_name' in details
+], indirect=['lecture_obj'])
+def test_get_resource_name(lecture_obj: Lecture, downloadables: Dict[str, Str], expected: str):
+    for resource_name in downloadables.keys():
+        if resource_name.split('.')[-1] != 'mp4':
+            assert lecture_obj.get_resource_name(resource_name) == expected
+
+
+@pytest.mark.parametrize('lecture_obj, expected', [
+    (url, details['type']) for url, details in testing_urls.items()
+], indirect=['lecture_obj'])
+def test_get_type(lecture_obj: Lecture, expected: LectureType):
+    assert lecture_obj.get_type() == expected

@@ -1,7 +1,7 @@
 from pathlib import Path
 from bs4 import Tag
 from rich.progress import Progress, TaskID
-from typing import Iterable, Literal
+from typing import Dict, Iterable, Literal
 from src.scraper._scraper import Scraper
 from src.utils import handle_network_errors
 from src.scraper.markup_template import create_markup
@@ -10,7 +10,7 @@ LectureType = Literal['video', 'text']
 
 
 class Lecture(Scraper):
-    def get_download_names_and_urls(self) -> dict[str, str] | None:
+    def get_download_names_and_urls(self) -> Dict[str, str] | None:
         download_tags = self.select_element(self.element_selectors.download_tags, raise_if_not_found=False)
         if download_tags is None:
             return None
@@ -31,13 +31,17 @@ class Lecture(Scraper):
     def get_lecture_number(self) -> str | None:
         lecture_name = self.get_name()
         lecture_name_number = lecture_name.split('-')
-        if len(lecture_name_number) > 1 or not lecture_name_number[0].strip().isdigit():
+        if len(lecture_name_number) < 1 or not lecture_name_number[0].strip().isdigit():
             return None
         return lecture_name_number[0]
 
     def get_resource_name(self, bare_resource_name: str) -> str:
+        print(bare_resource_name)
         lecture_number = self.get_lecture_number() if self.get_lecture_number() is not None else ''
-        resource_name = bare_resource_name.split('-')[0].strip()  # Strip out the number if it exists and remove white spaces
+        if bare_resource_name.split('-')[0].isdigit():
+            resource_name = '-'.join(bare_resource_name.split('-')[1:]).strip()  # Strip out the number if it exists and remove white spaces
+        else:
+            resource_name = bare_resource_name.strip()
         return f"{lecture_number}- resource_{resource_name}"
 
     def download(self, base_dir: Path, progress_bar: Progress, chunk_size: int = 4096):
