@@ -14,7 +14,7 @@ class ElementNotFoundError(Exception):
 
 
 class Scraper(ABC):
-    base_url = "https://codewithmosh.com/courses"
+    base_url = "https://codewithmosh.com/courses/lectures/"
     element_selectors = ElementSelectors
 
     def __init__(self, url: str, request_session: requests.Session, timeout: int = 60):
