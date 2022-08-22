@@ -1,0 +1,19 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+requests = "*"
+beautifulsoup4 = "*"
+rich = "*"
+
+[dev-packages]
+pytest = "*"
+pytest-mypy = "*"
+mypy = "*"
+autopep8 = "*"
+types-beautifulsoup4 = "*"
+
+[requires]
+python_version = "3.10"
