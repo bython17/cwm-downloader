@@ -1,12 +1,12 @@
+import json
 from time import sleep
-from typing import Callable, Literal
+from typing import Callable, Dict, Literal
 from requests.structures import CaseInsensitiveDict
 from requests.utils import cookiejar_from_dict
 from requests import Session, exceptions as rqexceptions
 from socket import gaierror
 from json import loads
 from functools import wraps
-from src.credentials import headers, cookies
 from rich import print as rprint
 from rich.progress import (
     BarColumn,
@@ -39,10 +39,16 @@ message_type_color = {
 }
 
 
+def get_credentials() -> Dict[str, Dict[str, str]]:
+    with open('credentials.json') as credentials_file:
+        return json.loads(credentials_file.read())
+
+
 def initialize_session():
     session = Session()
-    session.cookies = cookiejar_from_dict(cookies)
-    session.headers = CaseInsensitiveDict(headers)
+    credentials = get_credentials()
+    session.cookies = cookiejar_from_dict(credentials['cookies'])
+    session.headers = CaseInsensitiveDict(credentials['headers'])
     return session
 
 
