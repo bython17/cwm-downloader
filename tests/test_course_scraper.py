@@ -1,3 +1,4 @@
+from typing import List
 from src.scraper.course_scraper import Course
 from src.scraper._scraper import IncorrectUrlError
 import pytest
@@ -53,3 +54,13 @@ def test_get_lectures(course_obj: Course):
     print(lectures)
     assert len(lectures)
     assert all(len(section) for section in lectures.values())
+
+
+@pytest.mark.parametrize('index, expected', [
+    ([0, -1], 'Course'),
+    ([0, 43], 'Course (1 to 43)'),
+    ([51, -1], 'Course (From 51)'),
+    ([31, 43], 'Course (31 - 43)'),
+])
+def test_parse_index(index: List[int], expected: str):
+    assert Course.parse_index(index, 'Course') == expected
