@@ -52,12 +52,12 @@ def initialize_session():
     return session
 
 
-def render_message(message_type: Literal['info', 'warning', 'error'], message: str, question=False):
+def render_message(message_type: Literal['info', 'warning', 'error'], message: str, question=False, end: str = '\n', styles: str = '[default white]'):
     message_color = message_type_color[message_type]
-    display_message = f"{message_color}{message_type.upper()} [white]{message}"
+    display_message = f"{message_color}{message_type.upper()} {styles}{message}"
     if question:
-        return input(f"{display_message}: ")
-    rprint(display_message)
+        return input(f"{styles}{display_message}: ")
+    rprint(display_message, end=end)
 
 
 def handle_network_errors(func: Callable):
