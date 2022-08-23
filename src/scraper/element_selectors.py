@@ -21,9 +21,6 @@ class ElementSelectors(Enum):
         "body section div.course-mainbar div.row div ul li a",
     ]
     download_tags = ["a.download"]
-    main_container_div = ["body section div.course-mainbar.lecture-content.full-width-content.enforce-maximum-content-width"]
+    main_container_div = ["body section div.course-mainbar.lecture-content.full-width-content"]
     decomposable_elements = ['a.btn.complete.lecture-complete', '#empty_box', 'div.attachment-data', 'div.row attachment-pdf-embed']
     attribute_cleared_meta_tag = ['#lecture-completion-data']
-
-
-print(ElementSelectors.section_containers.value)
