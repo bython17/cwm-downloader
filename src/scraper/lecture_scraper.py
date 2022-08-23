@@ -3,10 +3,11 @@ from bs4 import Tag
 from rich.progress import Progress, TaskID
 from typing import Dict, Iterable, Literal
 from src.scraper._scraper import Scraper
-from src.utils import handle_network_errors
+from src.utils import handle_network_errors, render_message
 from src.scraper.markup_template import create_markup
 
 LectureType = Literal['video', 'text']
+FORBIDDEN_CHARACTERS = r'<>:"/\|?*'
 
 
 class Lecture(Scraper):
@@ -36,7 +37,6 @@ class Lecture(Scraper):
         return lecture_name_number[0]
 
     def get_resource_name(self, bare_resource_name: str) -> str:
-        print(bare_resource_name)
         lecture_number = self.get_lecture_number() if self.get_lecture_number() is not None else ''
         if bare_resource_name.split('-')[0].isdigit():
             resource_name = '-'.join(bare_resource_name.split('-')[1:]).strip()  # Strip out the number if it exists and remove white spaces
@@ -44,35 +44,61 @@ class Lecture(Scraper):
             resource_name = bare_resource_name.strip()
         return f"{lecture_number}- resource_{resource_name}"
 
+    @staticmethod
+    def sterilize_filename(file_name: str):
+        for character in file_name:
+            if character in FORBIDDEN_CHARACTERS:
+                file_name = file_name.replace(character, '')
+        file_name_list = [file_name_section.strip() for file_name_section in file_name.split('.') if file_name_section.strip() != '']
+        return '.'.join(file_name_list)
+
+    @staticmethod
+    def should_overwrite(file_path: Path):
+        if file_path.exists():
+            answer = render_message('warning', f'File named "{file_path.name}" exists. Shall I overwrite the file(y,N): ')
+            if answer.lower() not in ['y', 'yes', 'ofcourse']:
+                return False
+        return True
+
     def download(self, base_dir: Path, progress_bar: Progress, chunk_size: int = 4096):
         lecture_type = self.get_type()
         download_names_urls = self.get_download_names_and_urls()
         if lecture_type == 'text':
-            self.__download_text(base_dir)
+            filename = self.sterilize_filename(f"{str(self)}.html")
+            file_path = base_dir / filename
+            if self.should_overwrite(file_path):
+                current_task_id: TaskID = progress_bar.add_task('download', start=False, filename=str(self))
+                self.__download_text(file_path, progress_bar, current_task_id)
         if download_names_urls is not None:
             for download_name, download_url in download_names_urls.items():
-                if download_name.split('.')[-1] != 'mp4':
-                    download_name = self.get_resource_name(download_name)
-                self.__download(download_url, base_dir / download_name, progress_bar, chunk_size)
+                filename = self.sterilize_filename(download_name)
+                if filename.split('.')[-1] != 'mp4':
+                    filename = self.get_resource_name(filename)
+                file_path = base_dir / filename
+                if self.should_overwrite(file_path):
+                    current_task_id = progress_bar.add_task('download', filename=file_path.stem, start=False)
+                    self.__download(download_url, file_path, progress_bar, current_task_id, chunk_size)
+        elif download_names_urls is None and lecture_type != 'text':
+            render_message('warning', f'Skipping, Nothing to download in lecture "{str(self)}".')
 
     @handle_network_errors
-    def __download(self, url: str, file_path: Path, progress_bar: Progress, chunk_size: int):
-        current_task_id: TaskID = progress_bar.add_task('download', filename=file_path, start=False)
+    def __download(self, url: str, file_path: Path, progress_bar: Progress, current_task_id: TaskID, chunk_size: int):
         response = self.session.get(url, stream=True, timeout=self.timeout)
-        progress_bar.update(current_task_id, total=int(str(response.headers.get('content-length'))))
+        progress_bar.update(current_task_id, total=int(str(response.headers.get('content-length'))), completed=0)
         progress_bar.start_task(current_task_id)
 
-        with open(file_path) as file:
+        with file_path.open('wb') as file:
             for chunk in response.iter_content(chunk_size):
                 file.write(chunk)
                 progress_bar.update(current_task_id, advance=chunk_size)
 
-    def __download_text(self, base_dir: Path):
-        lecture_name = self.get_name()
+    def __download_text(self, file_path: Path, progress_bar: Progress, current_task_id):
+        progress_bar.start_task(current_task_id)
         lecture_main_container = self.get_text_lecture()
-        lecture_markup = create_markup(lecture_name, lecture_main_container)
-        with open(base_dir / f"{lecture_name}.html", 'w') as html_file:
+        lecture_markup = create_markup(str(self), lecture_main_container)
+        with file_path.open('w') as html_file:
             html_file.write(lecture_markup)
+        progress_bar.update(current_task_id, completed=100)
 
     def get_name(self) -> str:
         lecture_name = self.select_element(self.element_selectors.lecture_name, single=True)

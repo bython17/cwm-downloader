@@ -1,15 +1,16 @@
 from typing import List
 from src.scraper.course_scraper import Course
 from src.scraper._scraper import IncorrectUrlError
+from src.utils import get_progress_bar
 import pytest
 
 testing_urls = {
-    'https://codewithmosh.com/courses/783424/lectures/14779988': {
-        'name': 'The Ultimate Redux Course'
-    },  # Redux Course
     'https://codewithmosh.com/courses/ultimate-c-plus-plus-part1/lectures/42187035': {
         'name': 'Ultimate C++ Part 1: Fundamentals'
     },  # C++ Course
+    'https://codewithmosh.com/courses/783424/lectures/14779988': {
+        'name': 'The Ultimate Redux Course'
+    },  # Redux Course
     'https://codewithmosh.com/courses/357787/lectures/5634517': {
         'name': 'Mastering React'
     },  # React Course
@@ -51,16 +52,13 @@ def test_get_name(course_obj: Course, expected: str):
 ], indirect=True)
 def test_get_lectures(course_obj: Course):
     lectures = course_obj.get_lectures()
-    print(lectures)
     assert len(lectures)
     assert all(len(section) for section in lectures.values())
 
 
-@pytest.mark.parametrize('index, expected', [
-    ([0, -1], 'Course'),
-    ([0, 43], 'Course (1 to 43)'),
-    ([51, -1], 'Course (From 51)'),
-    ([31, 43], 'Course (31 - 43)'),
-])
-def test_parse_index(index: List[int], expected: str):
-    assert Course.parse_index(index, 'Course') == expected
+@pytest.mark.parametrize('course_obj', [
+    list(testing_urls.keys())[0]
+], indirect=True)
+def test_download(course_obj: Course, tmp_path):
+    with get_progress_bar() as progress_bar:
+        course_obj.download(tmp_path, progress_bar, lectures=[2, -1])

@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import List
 from src.scraper.lecture_scraper import Lecture
 from src.scraper._scraper import Scraper
@@ -7,26 +8,29 @@ from urllib.parse import urljoin
 
 class Course(Scraper):
     @staticmethod
-    def parse_index(index: List[int], index_name: str) -> str:
+    def slice_list(list_obj: List, index: List[int]) -> List:
         start, end = index
-        final_string = index_name + ' {}'
-        if start == 0 and end == -1:
-            return final_string.format('').strip()
-        if start != 0 and end == -1:
-            return final_string.format(f'(From {start})')
-        if start == 0 and end != -1:
-            return final_string.format(f'(1 to {end})')
-        return final_string.format(f'({start} - {end})')
+        if end == -1:
+            return list_obj[start:]
+        return list_obj[start:end+1]
 
-    def download(self, progress_bar: Progress, sections: List[int] = [0, -1], lectures: List[int] = [0, -1]) -> None:
+    # cwm-downloader url --sections 3-5 --lectures 3-34
 
-        course_task_id = progress_bar.add_task('course download', start=False, filename=str(self))
+    def download(self, base_dir: Path, progress_bar: Progress, sections: List[int] = [0, -1], lectures: List[int] = [0, -1], chunk_size: int = 4096) -> None:
+        sections_and_lectures = self.get_lectures()
+        filtered_sections: List[str] = self.slice_list(list(sections_and_lectures.keys()), sections)
+        for section in filtered_sections:
+            filtered_lectures: List[Lecture] = self.slice_list(sections_and_lectures[section], lectures)
+            section_path = base_dir / section
+            section_path.mkdir(exist_ok=True)
+            for lecture in filtered_lectures:
+                lecture.download(section_path, progress_bar, chunk_size)
 
     def get_lectures(self):
         section_containers = self.select_element(self.element_selectors.section_containers)
         section_lectures = {
             self.select_element(self.element_selectors.section_names, section_container, single=True).get_text(strip=True): [
-                urljoin(self.base_url, lecture.get('href')) for lecture in self.select_element(self.element_selectors.lecture_anchor_tags, section_container)
+                Lecture(urljoin(self.base_url, lecture.get('href')), self.session, self.timeout) for lecture in self.select_element(self.element_selectors.lecture_anchor_tags, section_container)
             ] for section_container in section_containers
         }
         return section_lectures

@@ -3,7 +3,15 @@ from xxlimited import Str
 from src.scraper.lecture_scraper import Lecture, LectureType
 import pytest
 
+from src.utils import get_progress_bar
+
 testing_urls: Dict[str, Dict[str, Any]] = {
+    'https://codewithmosh.com/courses/ultimate-c-plus-plus-part1/lectures/42187090': {
+        'downloadables': None,
+        'name': '3- Getting Help',
+        'number': '3',
+        'type': 'text'
+    },  # C++ Course text
     'https://codewithmosh.com/courses/783424/lectures/14779988': {
         'downloadables': None,
         'name': '1- Welcome',
@@ -16,12 +24,6 @@ testing_urls: Dict[str, Dict[str, Any]] = {
         'number': '1',
         'type': 'video'
     },  # Cpp course #1
-    'https://codewithmosh.com/courses/ultimate-c-plus-plus-part1/lectures/42187090': {
-        'downloadables': None,
-        'name': '3- Getting Help',
-        'number': '3',
-        'type': 'text'
-    },  # C++ Course text
     'https://codewithmosh.com/courses/357787/lectures/13898953': {
         'downloadables': {'react-advanced.zip': 'https://cdn.fs.teachablecdn.com/q39fCl2ASVi4B632lK4Q'},
         'resource_name': '2- resource_react-advanced.zip',
@@ -86,3 +88,20 @@ def test_get_resource_name(lecture_obj: Lecture, downloadables: Dict[str, Str], 
 ], indirect=['lecture_obj'])
 def test_get_type(lecture_obj: Lecture, expected: LectureType):
     assert lecture_obj.get_type() == expected
+
+
+@pytest.mark.parametrize('lecture_obj', [
+    url for url in list(testing_urls.keys())
+], indirect=True)
+def test_lecture_download(lecture_obj: Lecture, tmp_path):
+    with get_progress_bar() as progress_bar:
+        lecture_obj.download(tmp_path, progress_bar)
+
+
+@pytest.mark.parametrize('filename, expected', [
+    (r'a|<b>cd?.html', 'abcd.html'),
+    (r'a//.\.zip', 'a.zip'),
+    ('something ... zip.  .', 'something.zip')
+])
+def test_sterilize_filenames(filename: str, expected: str):
+    assert Lecture.sterilize_filename(filename) == expected
