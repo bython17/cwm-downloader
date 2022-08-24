@@ -19,13 +19,15 @@ class Course(Scraper):
     def download(self, base_dir: Path, sections: List[int] = [0, -1], lectures: List[int] = [0, -1], chunk_size: int = 4096) -> None:
         sections_and_lectures = self.get_lectures()
         filtered_sections: List[str] = self.slice_list(list(sections_and_lectures.keys()), sections)
+        course_dir = base_dir / str(self)
+        course_dir.mkdir(exist_ok=True)
         for section in filtered_sections:
             filtered_lectures: List[Lecture] = self.slice_list(sections_and_lectures[section], lectures)
-            section_path = base_dir / section
-            section_path.mkdir(exist_ok=True)
+            section_dir = course_dir / section
+            section_dir.mkdir(exist_ok=True)
             render_message('info', f'Starting section [bold blue]{section}', start='\n', end='\n\n')
             for lecture in filtered_lectures:
-                lecture.download(section_path, chunk_size)
+                lecture.download(section_dir, chunk_size)
 
     def get_lectures(self):
         section_containers = self.select_element(self.element_selectors.section_containers)
