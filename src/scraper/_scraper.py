@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from bs4 import BeautifulSoup, Tag
 from src.utils import handle_network_errors
 from src.scraper.element_selectors import ElementSelectors
+from functools import cached_property
 
 
 class IncorrectUrlError(Exception):
@@ -21,13 +22,10 @@ class Scraper(ABC):
         self.url = url
         self.timeout = timeout
         self.session = request_session
-        self.__soup = None
 
-    @property
+    @cached_property
     def soup(self):
-        if self.__soup is None:
-            self.__soup = self.make_soup()
-        return self.__soup
+        return self.make_soup()
 
     @handle_network_errors
     def make_soup(self):
