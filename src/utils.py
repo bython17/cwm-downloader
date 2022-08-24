@@ -53,13 +53,13 @@ def initialize_session():
     return session
 
 
-def render_message(message_type: Literal['info', 'warning', 'error'], message: str, question=False, end: str = '\n', styles: str = '[default white]'):
+def render_message(message_type: Literal['info', 'warning', 'error'], message: str, question=False, end: str = '\n', start: str = '', styles: str = '[default white]'):
     message_color = message_type_color[message_type]
     display_message = f"{message_color}{message_type.upper()} {styles}{message}[/]"
     if question:
         return Confirm.ask(f"{styles}{display_message}", default=False)
     else:
-        rprint(display_message, end=end)
+        rprint(f"{start}{display_message}", end=end)
 
 
 def handle_network_errors(func: Callable):

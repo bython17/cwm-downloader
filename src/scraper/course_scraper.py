@@ -23,16 +23,16 @@ class Course(Scraper):
             filtered_lectures: List[Lecture] = self.slice_list(sections_and_lectures[section], lectures)
             section_path = base_dir / section
             section_path.mkdir(exist_ok=True)
-            render_message('info', f'\nStarting section [bold blue]{section}\n')
+            render_message('info', f'Starting section [bold blue]{section}', start='\n', end='\n\n')
             for lecture in filtered_lectures:
                 lecture.download(section_path, chunk_size)
 
     def get_lectures(self):
         section_containers = self.select_element(self.element_selectors.section_containers)
         section_lectures = {
-            self.select_element(self.element_selectors.section_names, section_container, single=True).get_text(strip=True): [
+            f"{index + 1}- {self.select_element(self.element_selectors.section_names, section_container, single=True).get_text(strip=True)}": [
                 Lecture(urljoin(self.base_url, lecture.get('href')), self.session, self.timeout) for lecture in self.select_element(self.element_selectors.lecture_anchor_tags, section_container)
-            ] for section_container in section_containers
+            ] for index, section_container in enumerate(section_containers)
         }
         return section_lectures
 
