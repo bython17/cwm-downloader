@@ -1,7 +1,5 @@
-from typing import List
 from src.scraper.course_scraper import Course
 from src.scraper._scraper import IncorrectUrlError
-from src.utils import get_progress_bar
 import pytest
 
 testing_urls = {
@@ -51,14 +49,6 @@ def test_get_name(course_obj: Course, expected: str):
     url for url in testing_urls.keys()
 ], indirect=True)
 def test_get_lectures(course_obj: Course):
-    lectures = course_obj.get_lectures()
-    assert len(lectures)
-    assert all(len(section) for section in lectures.values())
-
-
-@pytest.mark.parametrize('course_obj', [
-    list(testing_urls.keys())[0]
-], indirect=True)
-def test_download(course_obj: Course, tmp_path):
-    with get_progress_bar() as progress_bar:
-        course_obj.download(tmp_path, progress_bar, lectures=[2, -1])
+    sections_and_lectures = course_obj.get_lectures()
+    assert len(sections_and_lectures)
+    assert all(len(section) for section in sections_and_lectures.values())

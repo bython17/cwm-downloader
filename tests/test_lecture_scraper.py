@@ -1,9 +1,7 @@
 from typing import Any, Dict
-from xxlimited import Str
 from src.scraper.lecture_scraper import Lecture, LectureType
 import pytest
 
-from src.utils import get_progress_bar
 
 testing_urls: Dict[str, Dict[str, Any]] = {
     'https://codewithmosh.com/courses/ultimate-c-plus-plus-part1/lectures/42187090': {
@@ -77,7 +75,7 @@ def test_get_lecture_number(lecture_obj: Lecture, expected: str | None):
 @pytest.mark.parametrize('lecture_obj, downloadables, expected', [
     (url, details['downloadables'], details['resource_name']) for url, details in testing_urls.items() if 'resource_name' in details
 ], indirect=['lecture_obj'])
-def test_get_resource_name(lecture_obj: Lecture, downloadables: Dict[str, Str], expected: str):
+def test_get_resource_name(lecture_obj: Lecture, downloadables: Dict[str, str], expected: str):
     for resource_name in downloadables.keys():
         if resource_name.split('.')[-1] != 'mp4':
             assert lecture_obj.get_resource_name(resource_name) == expected
@@ -88,14 +86,6 @@ def test_get_resource_name(lecture_obj: Lecture, downloadables: Dict[str, Str], 
 ], indirect=['lecture_obj'])
 def test_get_type(lecture_obj: Lecture, expected: LectureType):
     assert lecture_obj.get_type() == expected
-
-
-@pytest.mark.parametrize('lecture_obj', [
-    url for url in list(testing_urls.keys())
-], indirect=True)
-def test_lecture_download(lecture_obj: Lecture, tmp_path):
-    with get_progress_bar() as progress_bar:
-        lecture_obj.download(tmp_path, progress_bar)
 
 
 @pytest.mark.parametrize('filename, expected', [
