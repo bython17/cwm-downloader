@@ -3,7 +3,7 @@ from bs4 import Tag
 from rich.progress import Progress, TaskID
 from typing import Dict, Iterable, Literal
 from src.scraper._scraper import Scraper
-from src.utils import handle_network_errors, render_message
+from src.utils import get_progress_bar, handle_network_errors, render_message
 from src.scraper.markup_template import create_markup
 
 LectureType = Literal['video', 'text']
@@ -55,20 +55,19 @@ class Lecture(Scraper):
     @staticmethod
     def should_overwrite(file_path: Path):
         if file_path.exists():
-            answer = render_message('warning', f'File named "{file_path.name}" exists. Shall I overwrite the file(y,N): ')
-            if answer.lower() not in ['y', 'yes', 'ofcourse']:
-                return False
+            return render_message('warning', f'File named "{file_path.name}" exists. Shall I overwrite the file', question=True)
         return True
 
-    def download(self, base_dir: Path, progress_bar: Progress, chunk_size: int = 4096):
+    def download(self, base_dir: Path,  chunk_size: int = 4096):
         lecture_type = self.get_type()
         download_names_urls = self.get_download_names_and_urls()
         if lecture_type == 'text':
             filename = self.sterilize_filename(f"{str(self)}.html")
             file_path = base_dir / filename
             if self.should_overwrite(file_path):
-                current_task_id: TaskID = progress_bar.add_task('download', start=False, filename=str(self))
-                self.__download_text(file_path, progress_bar, current_task_id)
+                with get_progress_bar() as progress_bar:
+                    current_task_id: TaskID = progress_bar.add_task('download', start=False, filename=str(self))
+                    self.__download_text(file_path, progress_bar, current_task_id)
         if download_names_urls is not None:
             for download_name, download_url in download_names_urls.items():
                 filename = self.sterilize_filename(download_name)
@@ -76,15 +75,17 @@ class Lecture(Scraper):
                     filename = self.get_resource_name(filename)
                 file_path = base_dir / filename
                 if self.should_overwrite(file_path):
-                    current_task_id = progress_bar.add_task('download', filename=file_path.stem, start=False)
-                    self.__download(download_url, file_path, progress_bar, current_task_id, chunk_size)
+                    with get_progress_bar() as progress_bar:
+                        current_task_id = progress_bar.add_task('download', filename=file_path.stem, start=False)
+                        self.__download(download_url, file_path, progress_bar, current_task_id, chunk_size)
         elif download_names_urls is None and lecture_type != 'text':
             render_message('warning', f'Skipping, Nothing to download in lecture "{str(self)}".')
 
     @handle_network_errors
     def __download(self, url: str, file_path: Path, progress_bar: Progress, current_task_id: TaskID, chunk_size: int):
         response = self.session.get(url, stream=True, timeout=self.timeout)
-        progress_bar.update(current_task_id, total=int(str(response.headers.get('content-length'))), completed=0)
+        progress_bar.reset(current_task_id, start=False)
+        progress_bar.update(current_task_id, total=int(str(response.headers.get('content-length'))))
         progress_bar.start_task(current_task_id)
 
         with file_path.open('wb') as file:
@@ -92,7 +93,7 @@ class Lecture(Scraper):
                 file.write(chunk)
                 progress_bar.update(current_task_id, advance=chunk_size)
 
-    def __download_text(self, file_path: Path, progress_bar: Progress, current_task_id):
+    def __download_text(self, file_path: Path, progress_bar: Progress, current_task_id: TaskID):
         progress_bar.start_task(current_task_id)
         lecture_main_container = self.get_text_lecture()
         lecture_markup = create_markup(str(self), lecture_main_container)

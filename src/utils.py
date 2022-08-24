@@ -8,6 +8,7 @@ from socket import gaierror
 from json import loads
 from functools import wraps
 from rich import print as rprint
+from rich.prompt import Confirm
 from rich.progress import (
     BarColumn,
     DownloadColumn,
@@ -54,10 +55,11 @@ def initialize_session():
 
 def render_message(message_type: Literal['info', 'warning', 'error'], message: str, question=False, end: str = '\n', styles: str = '[default white]'):
     message_color = message_type_color[message_type]
-    display_message = f"{message_color}{message_type.upper()} {styles}{message}"
+    display_message = f"{message_color}{message_type.upper()} {styles}{message}[/]"
     if question:
-        return input(f"{styles}{display_message}: ")
-    rprint(display_message, end=end)
+        return Confirm.ask(f"{styles}{display_message}", default=False)
+    else:
+        rprint(display_message, end=end)
 
 
 def handle_network_errors(func: Callable):
@@ -67,23 +69,23 @@ def handle_network_errors(func: Callable):
             return func(*args, **kwargs)
         except rqexceptions.SSLError:
             render_message('error', 'SSL error occured retrying...')
-            decorated_func(*args, **kwargs)
+            return decorated_func(*args, **kwargs)
         except rqexceptions.Timeout:
             render_message('error', 'Server timed out retrying...')
             sleep(5)
-            decorated_func(*args, **kwargs)
+            return decorated_func(*args, **kwargs)
         except rqexceptions.ConnectionError:
-            render_message('error', 'Connenction error. [green]Try Checking your internet connection.')
+            render_message('error', 'Connection error. [green]Try Checking your internet connection.')
             sleep(5)
-            decorated_func(*args, **kwargs)
+            return decorated_func(*args, **kwargs)
         except gaierror as error:
             render_message('error', f'Network error retrying...')
             render_message('error', str(error))
             sleep(5)
-            decorated_func(*args, **kwargs)
+            return decorated_func(*args, **kwargs)
         except Exception as error:
             render_message('error', 'Unknown error occured retrying...')
             render_message('error', str(error))
             sleep(5)
-            decorated_func(*args, **kwargs)
+            return decorated_func(*args, **kwargs)
     return decorated_func
