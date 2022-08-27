@@ -53,18 +53,20 @@ class Lecture(Scraper):
         return '.'.join(file_name_list)
 
     @staticmethod
-    def should_overwrite(file_path: Path):
+    def should_overwrite(file_path: Path, noconfirm=False):
+        if noconfirm:
+            return True
         if file_path.exists():
             return render_message('warning', f'File named "{file_path.name}" exists. Shall I overwrite the file', question=True)
         return True
 
-    def download(self, base_dir: Path,  chunk_size: int = 4096):
+    def download(self, base_dir: Path,  chunk_size: int = 4096, noconfirm=False):
         lecture_type = self.get_type()
         download_names_urls = self.get_download_names_and_urls()
         if lecture_type == 'text':
             filename = self.sterilize_filename(f"{str(self)}.html")
             file_path = base_dir / filename
-            if self.should_overwrite(file_path):
+            if self.should_overwrite(file_path, noconfirm):
                 with get_progress_bar() as progress_bar:
                     current_task_id: TaskID = progress_bar.add_task('download', start=False, filename=str(self))
                     self.__download_text(file_path, progress_bar, current_task_id)
@@ -74,7 +76,7 @@ class Lecture(Scraper):
                 if filename.split('.')[-1] != 'mp4':
                     filename = self.get_resource_name(filename)
                 file_path = base_dir / filename
-                if self.should_overwrite(file_path):
+                if self.should_overwrite(file_path, noconfirm):
                     with get_progress_bar() as progress_bar:
                         current_task_id = progress_bar.add_task('download', filename=file_path.stem, start=False)
                         self.__download(download_url, file_path, progress_bar, current_task_id, chunk_size)

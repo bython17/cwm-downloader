@@ -9,15 +9,15 @@ from cwm_downloader.utils import render_message
 class Course(Scraper):
     @staticmethod
     def slice_list(list_obj: List, index: List[Union[int, str]]) -> List:
+        for i, value in enumerate(index):
+            if value == 'start':
+                index[i] = 0
+            if value == 'end':
+                index[i] = len(list_obj)
         start, end = index
-        if end == 'end':
-            end = len(list_obj)
-        if start == 'start':
-            start = 0
+        return list_obj[start-1:end+1]  # type: ignore
 
-        return list_obj[start:end+1]  # type: ignore
-
-    def download(self, base_dir: Path, sections: List[Union[int, str]] = ['start', 'end'], lectures: List[Union[int, str]] = ['start', 'end'], chunk_size: int = 4096) -> None:
+    def download(self, base_dir: Path, sections: List[Union[int, str]] = ['start', 'end'], lectures: List[Union[int, str]] = ['start', 'end'], chunk_size: int = 4096, noconfirm=False) -> None:
         sections_and_lectures = self.get_lectures()
         filtered_sections: List[str] = self.slice_list(list(sections_and_lectures.keys()), sections)
         course_dir = base_dir / str(self)
@@ -28,7 +28,7 @@ class Course(Scraper):
             section_dir.mkdir(exist_ok=True)
             render_message('info', f'Starting section [bold blue]{section}', start='\n', end='\n\n')
             for lecture in filtered_lectures:
-                lecture.download(section_dir, chunk_size)
+                lecture.download(section_dir, chunk_size, noconfirm)
 
     def get_lectures(self):
         section_containers = self.select_element(self.element_selectors.section_containers)
