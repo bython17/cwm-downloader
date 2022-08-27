@@ -3,7 +3,7 @@ from bs4 import Tag
 from rich.progress import Progress, TaskID
 from typing import Dict, Iterable, Literal
 from src.scraper._scraper import Scraper
-from src.utils import get_progress_bar, handle_network_errors, render_message
+from src.utils import get_progress_bar, handle_keyboard_interrupt_for_files, handle_network_errors, render_message
 from src.scraper.markup_template import create_markup
 
 LectureType = Literal['video', 'text']
@@ -82,6 +82,7 @@ class Lecture(Scraper):
             render_message('warning', f'Skipping, Nothing to download in lecture "{str(self)}".')
 
     @handle_network_errors
+    @handle_keyboard_interrupt_for_files
     def __download(self, url: str, file_path: Path, progress_bar: Progress, current_task_id: TaskID, chunk_size: int):
         response = self.session.get(url, stream=True, timeout=self.timeout)
         progress_bar.reset(current_task_id, start=False)
@@ -93,6 +94,7 @@ class Lecture(Scraper):
                 file.write(chunk)
                 progress_bar.update(current_task_id, advance=chunk_size)
 
+    @handle_keyboard_interrupt_for_files
     def __download_text(self, file_path: Path, progress_bar: Progress, current_task_id: TaskID):
         progress_bar.start_task(current_task_id)
         lecture_main_container = self.get_text_lecture()
