@@ -1,17 +1,10 @@
 import requests
 from abc import ABC, abstractmethod
 from bs4 import BeautifulSoup, Tag
+from src.exceptions import IncorrectUrlError, ElementNotFoundError
 from src.utils import handle_network_errors
 from src.scraper.element_selectors import ElementSelectors
 from functools import cached_property
-
-
-class IncorrectUrlError(Exception):
-    pass
-
-
-class ElementNotFoundError(Exception):
-    pass
 
 
 class Scraper(ABC):

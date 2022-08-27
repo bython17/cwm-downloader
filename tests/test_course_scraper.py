@@ -1,5 +1,5 @@
 from src.scraper.course_scraper import Course
-from src.scraper._scraper import IncorrectUrlError
+from src.exceptions import IncorrectUrlError
 import pytest
 
 testing_urls = {

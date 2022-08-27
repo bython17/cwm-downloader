@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List
+from typing import List, Union
 from src.scraper.lecture_scraper import Lecture
 from src.scraper._scraper import Scraper
 from urllib.parse import urljoin
@@ -8,15 +8,16 @@ from src.utils import render_message
 
 class Course(Scraper):
     @staticmethod
-    def slice_list(list_obj: List, index: List[int]) -> List:
+    def slice_list(list_obj: List, index: List[Union[int, str]]) -> List:
         start, end = index
-        if end == -1:
-            return list_obj[start:]
-        return list_obj[start:end+1]
+        if end == 'end':
+            end = len(list_obj)
+        if start == 'start':
+            start = 0
 
-    # cwm-downloader url --sections 3-5 --lectures 3-34
+        return list_obj[start:end+1]  # type: ignore
 
-    def download(self, base_dir: Path, sections: List[int] = [0, -1], lectures: List[int] = [0, -1], chunk_size: int = 4096) -> None:
+    def download(self, base_dir: Path, sections: List[Union[int, str]] = ['start', 'end'], lectures: List[Union[int, str]] = ['start', 'end'], chunk_size: int = 4096) -> None:
         sections_and_lectures = self.get_lectures()
         filtered_sections: List[str] = self.slice_list(list(sections_and_lectures.keys()), sections)
         course_dir = base_dir / str(self)
