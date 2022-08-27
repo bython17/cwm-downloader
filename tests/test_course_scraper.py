@@ -1,5 +1,5 @@
-from src.scraper.course_scraper import Course
-from src.exceptions import IncorrectUrlError
+from cwm_downloader.scraper.course_scraper import Course
+from cwm_downloader.exceptions import IncorrectUrlError
 import pytest
 
 testing_urls = {

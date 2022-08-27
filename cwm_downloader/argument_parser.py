@@ -1,8 +1,8 @@
 from pathlib import Path
 from typing import Union
-from src.exceptions import ElementNotFoundError, IncorrectUrlError
-from src.scraper.course_scraper import Course
-from src.utils import initialize_session, render_message
+from cwm_downloader.exceptions import ElementNotFoundError, IncorrectUrlError
+from cwm_downloader.scraper.course_scraper import Course
+from cwm_downloader.utils import initialize_session, render_message
 from requests import Session
 import typer
 

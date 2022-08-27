@@ -1,9 +1,9 @@
 import requests
 from abc import ABC, abstractmethod
 from bs4 import BeautifulSoup, Tag
-from src.exceptions import IncorrectUrlError, ElementNotFoundError
-from src.utils import handle_network_errors
-from src.scraper.element_selectors import ElementSelectors
+from cwm_downloader.exceptions import IncorrectUrlError, ElementNotFoundError
+from cwm_downloader.utils import handle_network_errors
+from cwm_downloader.scraper.element_selectors import ElementSelectors
 from functools import cached_property
 
 

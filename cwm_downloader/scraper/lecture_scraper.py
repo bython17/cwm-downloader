@@ -2,9 +2,9 @@ from pathlib import Path
 from bs4 import Tag
 from rich.progress import Progress, TaskID
 from typing import Dict, Iterable, Literal
-from src.scraper._scraper import Scraper
-from src.utils import get_progress_bar, handle_keyboard_interrupt_for_files, handle_network_errors, render_message
-from src.scraper.markup_template import create_markup
+from cwm_downloader.scraper._scraper import Scraper
+from cwm_downloader.utils import get_progress_bar, handle_keyboard_interrupt_for_files, handle_network_errors, render_message
+from cwm_downloader.scraper.markup_template import create_markup
 
 LectureType = Literal['video', 'text']
 FORBIDDEN_CHARACTERS = r'<>:"/\|?*'

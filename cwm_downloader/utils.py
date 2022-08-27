@@ -2,7 +2,7 @@ import json
 from time import sleep
 from typing import Callable, Dict, Literal
 from sys import exit
-from src.exceptions import CredentialsNotFoundError, InvalidCredentialsError
+from cwm_downloader.exceptions import CredentialsNotFoundError, InvalidCredentialsError
 from requests.structures import CaseInsensitiveDict
 from requests.utils import cookiejar_from_dict
 from requests import Session, exceptions as rqexceptions

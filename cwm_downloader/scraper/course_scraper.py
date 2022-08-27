@@ -1,9 +1,9 @@
 from pathlib import Path
 from typing import List, Union
-from src.scraper.lecture_scraper import Lecture
-from src.scraper._scraper import Scraper
+from cwm_downloader.scraper.lecture_scraper import Lecture
+from cwm_downloader.scraper._scraper import Scraper
 from urllib.parse import urljoin
-from src.utils import render_message
+from cwm_downloader.utils import render_message
 
 
 class Course(Scraper):

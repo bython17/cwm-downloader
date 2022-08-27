@@ -1,5 +1,5 @@
 import pytest
-from src.utils import initialize_session
+from cwm_downloader.utils import initialize_session
 
 
 def pytest_configure(config):

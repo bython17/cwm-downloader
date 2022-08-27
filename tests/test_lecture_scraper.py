@@ -1,5 +1,5 @@
 from typing import Any, Dict
-from src.scraper.lecture_scraper import Lecture, LectureType
+from cwm_downloader.scraper.lecture_scraper import Lecture, LectureType
 import pytest
 
 
