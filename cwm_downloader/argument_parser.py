@@ -31,9 +31,9 @@ class ArgumentParser:
 
         section: int = typer.Option(1, '--section', '-s', help="The section from where the download starts."),
 
-        lecture: int = typer.Option(1, '--lecture', '-l', help="The section from where the download starts."),
+        lecture: int = typer.Option(1, '--lecture', '-l', help="The lecture from where the download starts."),
 
-        only: bool = typer.Option(False, '--only', help="Download all lectures and sections after the specified section and lecture."),
+        only: bool = typer.Option(False, '--only', help="Download the specified lecture and section only."),
 
         timeout: int = typer.Option(60, '--timeout', '-T', help="Set the timeout for the connection and the server to respond. (Increase the number if you have a slower connection)."),
 
