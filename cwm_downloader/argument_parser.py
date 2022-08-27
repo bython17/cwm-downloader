@@ -62,7 +62,6 @@ class ArgumentParser:
         formatted_section = self.section_or_lecture_parser(section, onwards)
         formatted_lecture = self.section_or_lecture_parser(lecture, onwards)
 
-        print(formatted_section, formatted_lecture)
         try:
             course_obj = Course(url, self.session, timeout)
             course_obj.download(path, formatted_section, formatted_lecture, chunk_size)
