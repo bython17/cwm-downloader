@@ -1,13 +1,13 @@
 import json
 from time import sleep
-from typing import Callable, Dict, Literal
+from typing import Callable, Dict, Literal, Optional
 from sys import exit
 from cwm_downloader.exceptions import CredentialsNotFoundError, InvalidCredentialsError
 from requests.structures import CaseInsensitiveDict
 from requests.utils import cookiejar_from_dict
 from requests import Session, exceptions as rqexceptions
 from socket import gaierror
-from pathlib import Path
+from pathlib import Path, PurePath
 from functools import wraps
 from rich import print as rprint
 from rich.prompt import Confirm
@@ -79,14 +79,21 @@ def handle_credentials_not_found_error(func: Callable):
 
 def handle_keyboard_interrupt_for_files(func: Callable):
     @wraps(func)
-    def decorated_func(file: Path, *args, **kwargs):
+    def decorated_func(*args, **kwargs):
         try:
-            return func(file, *args, **kwargs)
+            return func(*args, **kwargs)
         except KeyboardInterrupt:
-            render_message('warning', 'Process interupted. cleaning up...')
-            file.unlink(missing_ok=True)
-            render_message('info', 'Cleanup was succesfull')
-            exit(0)
+            file_path: Optional[Path] = None
+            for arg in args:
+                if isinstance(arg, PurePath):
+                    file_path = arg
+                    break
+            if file_path:
+                render_message('warning', 'Process interupted. cleaning up...')
+                file_path.unlink(missing_ok=True)
+                render_message('info', 'Cleanup was succesfull')
+                exit(0)
+    return decorated_func
 
 
 def handle_network_errors(func: Callable):

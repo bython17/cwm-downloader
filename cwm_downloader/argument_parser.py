@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Union
 from cwm_downloader.exceptions import ElementNotFoundError, IncorrectUrlError
 from cwm_downloader.scraper.course_scraper import Course
 from cwm_downloader.utils import initialize_session, render_message
@@ -12,31 +11,12 @@ class ArgumentParser:
         self.session = session
         typer.run(self.main)
 
-    def section_or_lecture_parser(self, value: str, onwards=False):
-        indices = value.split('-')
-        formated_indices: list[Union[int, str]] = []
-
-        if onwards and len(indices) > 1:
-            raise typer.BadParameter(f'"--onwards" can only be used with a single lecture and section')
-
-        elif onwards:
+    def section_or_lecture_parser(self, value: int, only=False):
+        if value <= 0:
+            raise typer.BadParameter(f'{value}. The value should be greater than 0.')
+        if not only:
             return [value, 'end']
-
-        if len(indices) > 2:
-            raise typer.BadParameter(f'"{value}" is not allowed.')
-
-        for index in indices:
-            if index.lower() == 'all':
-                formated_indices = ['start', 'end']
-                break
-            elif index.lower() == 'start' or index.lower() == 'end':
-                formated_indices.append(index)
-            elif index.isdigit():
-                formated_indices.append(int(index))
-            else:
-                raise typer.BadParameter(f'"{index}" in "{value}" is not allowed.')
-
-        return formated_indices
+        return [value, value]
 
     def is_single_lecture(self, sections: list, lectures: list):
         if len(sections) == 1 and len(lectures) == 1:
@@ -49,22 +29,24 @@ class ArgumentParser:
 
         path: Path = typer.Argument(Path('.'), help="The path where the course gets downloaded in. The program creates its own course directory."),
 
-        section: str = typer.Option('start', '--section', '-s', help="The section from where the download starts."),
+        section: int = typer.Option(1, '--section', '-s', help="The section from where the download starts."),
 
-        lecture: str = typer.Option('end', '--lecture', '-l', help="The section from where the download starts."),
+        lecture: int = typer.Option(1, '--lecture', '-l', help="The section from where the download starts."),
 
-        onwards: bool = typer.Option(False, help="Download all lectures and sections after the specified section and lecture."),
+        only: bool = typer.Option(False, '--only', help="Download all lectures and sections after the specified section and lecture."),
 
         timeout: int = typer.Option(60, '--timeout', '-T', help="Set the timeout for the connection and the server to respond. (Increase the number if you have a slower connection)."),
 
-        chunk_size: int = typer.Option(4096, help="The chunk that the app downloads at a time when downloading content.")
+        chunk_size: int = typer.Option(4096, help="The chunk that the app downloads at a time when downloading content."),
+
+        noconfirm: bool = typer.Option(False, '--noconfirm', help="Disable the confirmation when overwriting a file.")
     ):
-        formatted_section = self.section_or_lecture_parser(section, onwards)
-        formatted_lecture = self.section_or_lecture_parser(lecture, onwards)
+        formatted_section = self.section_or_lecture_parser(section, only)
+        formatted_lecture = self.section_or_lecture_parser(lecture, only)
 
         try:
             course_obj = Course(url, self.session, timeout)
-            course_obj.download(path, formatted_section, formatted_lecture, chunk_size)
+            course_obj.download(path, formatted_section, formatted_lecture, chunk_size, noconfirm)
         except IncorrectUrlError:
             render_message('error', f'Incorrect Url "{url}".')
             render_message('info', f'Use a url with a base of {Course.base_url}')
