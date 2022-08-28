@@ -41,16 +41,24 @@ message_type_color = {
     'error': '[bold red]'
 }
 
+credentials_type = Dict[str, Dict[str, str]]
 
-def get_credentials() -> Dict[str, Dict[str, str]]:
-    credentials_path = Path('./credentials.json')
-    if credentials_path.is_file():
-        credentials_dict = json.loads(credentials_path.read_text())
-        if 'headers' not in credentials_dict or 'cookies' not in credentials_dict:
-            raise InvalidCredentialsError('The contents in credentials.json are invalid.')
-        return credentials_dict
-    else:
-        raise CredentialsNotFoundError('The file credentials.json doesn\'t exist.')
+credentials_template: credentials_type = {
+    'headers': {},
+    'cookies': {},
+}
+
+
+def create_credentials(credentials_file: Path):
+    credentials_data = json.dumps(credentials_template)
+    credentials_file.write_text(credentials_data)
+
+
+def get_credentials(credentials_file: Path) -> credentials_type:
+    credentials_dict = json.loads(credentials_file.read_text())
+    if 'headers' not in credentials_dict or 'cookies' not in credentials_dict:
+        raise InvalidCredentialsError('The contents in credentials.json are invalid.')
+    return credentials_dict
 
 
 def render_message(message_type: Literal['info', 'warning', 'error'], message: str, question=False, end: str = '\n', start: str = '', styles: str = '[default white]'):
@@ -67,12 +75,13 @@ def handle_credentials_not_found_error(func: Callable):
     def decorated_func(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except CredentialsNotFoundError:
-            render_message('error', f'The file credentials.json could not be found')
-            render_message('info', f'Create a credentials.json file in your current directory and add appropriate cookies and headers.')
-            exit(1)
+        # except CredentialsNotFoundError:
+        #     render_message('error', f'The file credentials.json could not be found')
+        #     render_message('info', f'Create a credentials.json file in your current directory and add appropriate cookies and headers.')
+        #     exit(1)
         except InvalidCredentialsError:
             render_message('error', f'The content inside credentials.json is not valid. Please add the appropriate headers and cookies.')
+            render_message('info', 'Use the --edit-credentials flag to edit the credentials.')
             exit(1)
     return decorated_func
 
@@ -126,9 +135,9 @@ def handle_network_errors(func: Callable):
 
 
 @handle_credentials_not_found_error
-def initialize_session():
+def initialize_session(credentials_file: Path):
     session = Session()
-    credentials = get_credentials()
+    credentials = get_credentials(credentials_file)
     session.cookies = cookiejar_from_dict(credentials['cookies'])
     session.headers = CaseInsensitiveDict(credentials['headers'])
     return session
