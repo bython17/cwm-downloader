@@ -1,3 +1,6 @@
+""" This modules provides a markup template for the text lectures."""
+
+# Styles that are applied to all the text lectures
 styles = '''
 body {
     color: #aaa;
@@ -59,6 +62,7 @@ h2.section-title {
 }
 '''
 
+# Here is the markup with some format strings
 markup = '''<html>
   <head>
   <title> {0} </title>
@@ -79,4 +83,12 @@ markup = '''<html>
 
 
 def create_markup(lecture_name: str, main_container: str):
+    """
+    Create a marukup given the container to be wraped and the name 
+    of the lecture.
+
+    :param lecture_name: The name of the lecture
+    :param main_container: The container that contains all the useful information about
+    the course
+    """
     return markup.format(lecture_name, styles, main_container)

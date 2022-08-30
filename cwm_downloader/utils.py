@@ -1,8 +1,13 @@
+""" 
+This module is a helper to all modules in this project it contains alot of useful functions
+for the scrapers and the cli
+"""
+
 import json
 from time import sleep
+from typer import Exit
 from typing import Callable, Dict, Literal, Optional
-from sys import exit
-from cwm_downloader.exceptions import CredentialsNotFoundError, InvalidCredentialsError
+from cwm_downloader.exceptions import InvalidCredentialsError
 from requests.structures import CaseInsensitiveDict
 from requests.utils import cookiejar_from_dict
 from requests import Session, exceptions as rqexceptions
@@ -22,6 +27,7 @@ from rich.progress import (
 
 
 def get_progress_bar():
+    """ Generate a progress bar with a predefined config """
     return Progress(
         TextColumn("[bold blue]{task.fields[filename]}", justify="right"),
         BarColumn(bar_width=None),
@@ -35,14 +41,20 @@ def get_progress_bar():
     )
 
 
+# Mapping the the error types with their styles
 message_type_color = {
     'info': '[bold green]',
     'warning': '[bold yellow]',
     'error': '[bold red]'
 }
 
+# Just creating a type alias for the credentials type
+# Since its a bit complicated and mistakes could be
+# easily made when typing it again 😁
 credentials_type = Dict[str, Dict[str, str]]
 
+# This is the most basic dict form of the
+# credentials.json file
 credentials_template: credentials_type = {
     'headers': {},
     'cookies': {},
@@ -50,43 +62,93 @@ credentials_template: credentials_type = {
 
 
 def create_credentials(credentials_file: Path):
+    """
+    Create a credentials file with a predefined template
+
+    :param credentials_file: The path of the credentials file to create
+    """
     credentials_data = json.dumps(credentials_template)
     credentials_file.write_text(credentials_data)
 
 
 def get_credentials(credentials_file: Path) -> credentials_type:
+    """
+    Get the credentials and load it to a python dict and if it isn't valid
+    raise an InvalidCredentialsError
+
+    :param credentials_file: The file to open and read for the credentials
+    """
     credentials_dict = json.loads(credentials_file.read_text())
+    # Check if the headers and cookies are not inside the dictionary
+    # and raise an error if they are not.
     if 'headers' not in credentials_dict or 'cookies' not in credentials_dict:
         raise InvalidCredentialsError('The contents in credentials.json are invalid.')
     return credentials_dict
 
 
 def render_message(message_type: Literal['info', 'warning', 'error'], message: str, question=False, end: str = '\n', start: str = '', styles: str = '[default white]'):
+    """
+    Display a message to the terminal and customize it with styles and colors.
+
+    :param message_type: The type of the message [info, warning or error]
+    :param message: The message to display to the user
+    :param question: If true rather than just displaying a message change that message to
+    a rich.Confirm and return the result
+    :param start: Any text to put before the whole message
+    :param end: Any text to put after the whole message
+    :param styles: A rich markup used to style the message
+    """
     message_color = message_type_color[message_type]
+    # Create the message in a format of
+    # MESSAGE_TYPE MESSAGE
     display_message = f"{message_color}{message_type.upper()} {styles}{message}[/]"
     if question:
+        # This means that the quesiton param is True and that means
+        # We should return the rich.Confirm
         return Confirm.ask(f"{styles}{display_message}", default=False)
     else:
+        # This means that it isn't a question so just display the
+        # message using rich.print which supports colors and rich
+        # markup.
         rprint(f"{start}{display_message}", end=end)
 
 
-def handle_credentials_not_found_error(func: Callable):
+def handle_range_error(func: Callable):
+    """ 
+    A decorator for handling range related errors. 
+    When the error occurs it's simply gonne inform the user about it and then exit.
+    """
     @wraps(func)
     def decorated_func(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        # except CredentialsNotFoundError:
-        #     render_message('error', f'The file credentials.json could not be found')
-        #     render_message('info', f'Create a credentials.json file in your current directory and add appropriate cookies and headers.')
-        #     exit(1)
+        except IndexError:
+            render_message('error', 'The specified section or lecture doesn\'t exist.')
+            raise Exit(1)
+    return decorated_func
+
+
+def handle_invalid_credentials(func: Callable):
+    """ 
+    A decorator for handling the InvalidCredentialsError error. When the error occurs
+    it's simply gonne inform the user about it and then exit.
+    """
+    @wraps(func)
+    def decorated_func(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
         except InvalidCredentialsError:
             render_message('error', f'The content inside credentials.json is not valid. Please add the appropriate headers and cookies.')
             render_message('info', 'Use the --edit-credentials flag to edit the credentials.')
-            exit(1)
+            raise Exit(1)
     return decorated_func
 
 
 def handle_keyboard_interrupt_for_files(func: Callable):
+    """ 
+    A decorator for hanling the KeyboardInterrupt error for file inteructions 
+    when the exception occurs it's going to delete the file and exit the app.
+    """
     @wraps(func)
     def decorated_func(*args, **kwargs):
         try:
@@ -101,11 +163,16 @@ def handle_keyboard_interrupt_for_files(func: Callable):
                 render_message('warning', 'Process interupted. cleaning up...')
                 file_path.unlink(missing_ok=True)
                 render_message('info', 'Cleanup was succesfull')
-                exit(0)
+                raise Exit(0)
     return decorated_func
 
 
 def handle_network_errors(func: Callable):
+    """ 
+    A decorator to handle network errors for request downloads.
+    if any error occurs it is going to recurse the inner decorated_func
+    until the it finishes. And it is going to log the errors when doing so.
+    """
     @wraps(func)
     def decorated_func(*args, **kwargs):
         try:
@@ -134,8 +201,14 @@ def handle_network_errors(func: Callable):
     return decorated_func
 
 
-@handle_credentials_not_found_error
+@handle_invalid_credentials
 def initialize_session(credentials_file: Path):
+    """
+    Initialize a session with the headers and cookies that are found
+    from the credentials_file.
+
+    :param credentials_file: The file to read the headers and cookies.
+    """
     session = Session()
     credentials = get_credentials(credentials_file)
     session.cookies = cookiejar_from_dict(credentials['cookies'])

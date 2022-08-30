@@ -49,6 +49,6 @@ def test_get_name(course_obj: Course, expected: str):
     url for url in testing_urls.keys()
 ], indirect=True)
 def test_get_lectures(course_obj: Course):
-    sections_and_lectures = course_obj.get_lectures()
+    sections_and_lectures = course_obj.get_all_sections()
     assert len(sections_and_lectures)
     assert all(len(section) for section in sections_and_lectures.values())

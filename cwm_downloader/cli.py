@@ -1,56 +1,117 @@
+"""
+This module provides the app function that executes the cli
+"""
+
 from pathlib import Path
 from cwm_downloader.exceptions import ElementNotFoundError, IncorrectUrlError
 from cwm_downloader.scraper.course_scraper import Course
 from cwm_downloader.utils import initialize_session, render_message, create_credentials
-from sys import exit
+from cwm_downloader import __app_name__, __version__
+from typing import Optional
 import typer
 
-app = typer.Typer(name="cwm-downloader", no_args_is_help=False, pretty_exceptions_show_locals=False)
+# Initialize the typer app
+app = typer.Typer(pretty_exceptions_show_locals=False, no_args_is_help=True)  # Disable showing the locals when an exception occurs.
 
 
-def section_or_lecture_parser(value: int, only=False):
-    if value <= 0:
-        raise typer.BadParameter(f'{value}. The value should be greater than 0.')
-    if not only:
-        return [value, 'end']
-    return [value, value]
-
-
-def is_single_lecture(sections: list, lectures: list):
-    if len(sections) == 1 and len(lectures) == 1:
-        return True
-    return False
-
-
-def manage_credentials(credentials_file: Path, edit_credentials: bool):
-    if not credentials_file.is_file():
-        create_credentials(credentials_file)
-
-    if edit_credentials:
-        exit_code = typer.launch(str(credentials_file), wait=True)
-        if exit_code == 0:
-            exit(0)
-        else:
-            render_message('error', 'Failed to edit the file.')
-            exit(1)
-
-
-def create_safe_base_app_dir():
+def get_safe_base_app_dir():
+    """ Get the app's config directory safely (create it even if it doesn't exist). """
     app_base_dir = Path(typer.get_app_dir('cwm-downloader'))
     if not app_base_dir.exists():
         app_base_dir.mkdir(parents=True)
     return app_base_dir
 
 
-@app.command()
+def _version_callback(value: bool):
+    if value:
+        typer.echo(f"{__app_name__} v{__version__}")
+        raise typer.Exit()
+
+
+def _edit_credentials(credentials_file: Path):
+    """ Launch an editor and edit the credentials.json file. """
+    exit_code = typer.launch(str(credentials_file), wait=True)
+    if exit_code == 0:
+        # This means every thing is fine and the editor of the os reuturned an exit code of 0
+        raise typer.Exit(0)
+    else:
+        # This means for what ever reason the editor failed to edit the file in that case then inform the user and
+        # exit with a code of 1
+        render_message('error', 'Failed to edit the file.')
+        raise typer.Exit(1)
+
+
+def check_if_less_than_zero(value: int):
+    if value:
+        if value <= 0:
+            raise typer.BadParameter('Values less than 1 are not allowed')
+        return value
+
+
+def _download(course_obj: Course, section_no: Optional[int], lecture_no: Optional[int], only: bool, base_dir: Path, **download_args):
+    """
+    Call the perfect download method based on the given section and lecture numbers
+
+    :param course_obj: A course object.
+    :param section_no: The index of the section given by the user
+    :param lecture_no: The index of the lecture given by the user
+    :param only: The only flag given by the user
+    :param base_dir: The base directory(path) that is given by the user
+
+    Any other keyword argument will be passed to each download methods. 
+    """
+    if only:
+        # Sample command: cwm-downloader download URL PATH --only
+        if not section_no and not lecture_no:
+            raise typer.BadParameter('Cannot use --only without a section or lecture')
+        # Sample command: cwm-downloader download URL PATH --section INT --lecture INT --only
+        if section_no and lecture_no:
+            course_obj.download_lecture(base_dir, section_no-1, lecture_no-1, all_sections=None, **download_args)
+
+        # Sample command: cwm-downloader download URL PATH --section INT --only
+        elif section_no and not lecture_no:
+            course_obj.download_section(base_dir, section_no-1, 0, all_sections=None, **download_args)
+
+        # Sample command: cwm-downloader download URL PATH --lecture 4 --only
+        elif lecture_no and not section_no:
+            course_obj.download_lecture(base_dir, 0, lecture_no-1, all_sections=None, **download_args)
+    else:
+        # If section_no and lecture_no are None then change them to 1
+        if not section_no:
+            section_no = 1
+        if not lecture_no:
+            lecture_no = 1
+
+        course_obj.download(base_dir, section_no-1, lecture_no-1, **download_args)
+
+
+@app.callback()
 def main(
+    version: bool = typer.Option(False, '--version', help="Show the app's version and exit.", callback=_version_callback, is_eager=True),
+    edit_credentials: bool = typer.Option(False, '--edit-credentials', help="Edit the credentials.json file and exit.")
+) -> None:
+    """ Download courses from https://codewithmosh.com with ease!. """
+
+    credentials_file = get_safe_base_app_dir() / 'credentials.json'
+
+    # if the credentials file doesn't exist then create one using the function
+    # create_credentials that injects a simple template to the file when creating it.
+    if not credentials_file.is_file():
+        create_credentials(credentials_file)
+
+    if edit_credentials:
+        _edit_credentials(credentials_file)
+
+
+@app.command()
+def download(
     url: str = typer.Argument(..., help="Any lecture url from the course you want to download."),
 
     path: Path = typer.Argument(Path('.'), help="The path where the course gets downloaded in. The program creates its own course directory."),
 
-    section: int = typer.Option(1, '--section', '-s', help="The section from where the download starts."),
+    section_no: Optional[int] = typer.Option(None, '--section', '-s', help="The section from where the download starts.", callback=check_if_less_than_zero),
 
-    lecture: int = typer.Option(1, '--lecture', '-l', help="The lecture from where the download starts."),
+    lecture_no: Optional[int] = typer.Option(None, '--lecture', '-l', help="The lecture from where the download starts.", callback=check_if_less_than_zero),
 
     only: bool = typer.Option(False, '--only', help="Download the specified lecture and section only."),
 
@@ -58,26 +119,24 @@ def main(
 
     chunk_size: int = typer.Option(4096, help="The chunk that the app downloads at a time when downloading content."),
 
-    noconfirm: bool = typer.Option(False, '--noconfirm', help="Disable the confirmation when overwriting a file."),
-
-    edit_credentials: bool = typer.Option(False, '--edit-credentials', help="Edit the credentials.json file and exit.", is_eager=True)
+    noconfirm: bool = typer.Option(False, '--noconfirm', help="Disable the confirmation when overwriting a file.")
 ):
-    app_base_dir = create_safe_base_app_dir()
-    credentials_file = app_base_dir / 'credentials.json'
-
-    manage_credentials(credentials_file, edit_credentials)
-
-    formatted_section = section_or_lecture_parser(section, only)
-    formatted_lecture = section_or_lecture_parser(lecture, only)
+    credentials_file = get_safe_base_app_dir() / 'credentials.json'
 
     try:
+        # Initialize a request Session using initialize_session which initializes a session
+        # by setting the headers and cookies from the credentials.json file for us.
         with initialize_session(credentials_file) as session:
             course_obj = Course(url, session, timeout)
-            course_obj.download(path, formatted_section, formatted_lecture, chunk_size, noconfirm)
+            _download(course_obj, section_no, lecture_no, only, path, chunk_size=chunk_size, noconfirm=noconfirm)
+    # This is an error raised by the url validator found in the base abstract class
+    # Scraper in _scraper.py
     except IncorrectUrlError:
         render_message('error', f'Incorrect Url "{url}".')
         render_message('info', f'Use a url with a base of {Course.base_url}')
-        exit(1)
+        raise typer.Exit(1)
+    # This is also raised in the abstract base class Scraper and it is raised when an element selctor
+    # cannot be found.
     except ElementNotFoundError:
         render_message('error', f'The program could\'nt fetch resources. There might be updates to the site or your subscription has ended. Or you might have an invalid cookies')
-        exit(1)
+        raise typer.Exit(1)

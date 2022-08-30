@@ -1,3 +1,6 @@
+""" This module provides contexual exceptions for the app. """
+
+
 class CredentialsNotFoundError(FileNotFoundError):
     ...
 

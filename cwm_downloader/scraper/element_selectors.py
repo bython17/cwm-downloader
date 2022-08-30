@@ -1,7 +1,12 @@
+""" A module which provides all the necessary css selectors to scrap the site. """
 from enum import Enum
 
 
 class ElementSelectors(Enum):
+    """ 
+    All the element selectors needed in a list format so that if one failes
+    we can try the next selector. This is implemented in _scraper.select_element
+    """
     course_name = [
         # "#__next div div div.jsx-1640592643.wrap h1",
         "body section div.course-sidebar h2"
