@@ -20,19 +20,20 @@ def _version_callback(value: bool):
         raise typer.Exit()
 
 
-def _edit_credentials_callback():
+def _edit_credentials_callback(value: bool):
     """ Launch an editor and edit the credentials.json file. """
-    # Load the credentials file
-    credentials_file = load_credentials()
-    exit_code = typer.launch(str(credentials_file), wait=True)
-    if exit_code == 0:
-        # This means every thing is fine and the editor of the os reuturned an exit code of 0
-        raise typer.Exit(0)
-    else:
-        # This means for what ever reason the editor failed to edit the file in that case then inform the user and
-        # exit with a code of 1
-        render_message('error', 'Failed to edit the file.')
-        raise typer.Exit(1)
+    if value:
+        # Load the credentials file
+        credentials_file = load_credentials()
+        exit_code = typer.launch(str(credentials_file), wait=True)
+        if exit_code == 0:
+            # This means every thing is fine and the editor of the os reuturned an exit code of 0
+            raise typer.Exit(0)
+        else:
+            # This means for what ever reason the editor failed to edit the file in that case then inform the user and
+            # exit with a code of 1
+            render_message('error', 'Failed to edit the file.')
+            raise typer.Exit(1)
 
 
 def check_if_less_than_zero(value: int):
