@@ -113,12 +113,10 @@ def download(
 
     noconfirm: bool = typer.Option(False, '--noconfirm', help="Disable the confirmation when overwriting a file.")
 ):
-    credentials_file = get_safe_base_app_dir() / 'credentials.json'
-
     try:
         # Initialize a request Session using initialize_session which initializes a session
         # by setting the headers and cookies from the credentials.json file for us.
-        with initialize_session(credentials_file) as session:
+        with initialize_session() as session:
             course_obj = Course(url, session, timeout)
             _download(course_obj, section_no, lecture_no, only, path, chunk_size=chunk_size, noconfirm=noconfirm)
     # This is an error raised by the url validator found in the base abstract class
