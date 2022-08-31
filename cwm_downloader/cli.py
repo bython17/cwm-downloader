@@ -5,7 +5,7 @@ This module provides the app function that executes the cli
 from pathlib import Path
 from cwm_downloader.exceptions import ElementNotFoundError, IncorrectUrlError
 from cwm_downloader.scraper.course_scraper import Course
-from cwm_downloader.utils import initialize_session, render_message, create_credentials
+from cwm_downloader.utils import initialize_session, load_credentials, render_message
 from cwm_downloader import __app_name__, __version__
 from typing import Optional
 import typer
@@ -28,8 +28,10 @@ def _version_callback(value: bool):
         raise typer.Exit()
 
 
-def _edit_credentials(credentials_file: Path):
+def _edit_credentials_callback():
     """ Launch an editor and edit the credentials.json file. """
+    # Load the credentials file
+    credentials_file = load_credentials()
     exit_code = typer.launch(str(credentials_file), wait=True)
     if exit_code == 0:
         # This means every thing is fine and the editor of the os reuturned an exit code of 0
@@ -88,19 +90,9 @@ def _download(course_obj: Course, section_no: Optional[int], lecture_no: Optiona
 @app.callback()
 def main(
     version: bool = typer.Option(False, '--version', help="Show the app's version and exit.", callback=_version_callback, is_eager=True),
-    edit_credentials: bool = typer.Option(False, '--edit-credentials', help="Edit the credentials.json file and exit.")
+    edit_credentials: bool = typer.Option(False, '--edit-credentials', help="Edit the credentials.json file and exit.", callback=_edit_credentials_callback)
 ) -> None:
     """ Download courses from https://codewithmosh.com with ease!. """
-
-    credentials_file = get_safe_base_app_dir() / 'credentials.json'
-
-    # if the credentials file doesn't exist then create one using the function
-    # create_credentials that injects a simple template to the file when creating it.
-    if not credentials_file.is_file():
-        create_credentials(credentials_file)
-
-    if edit_credentials:
-        _edit_credentials(credentials_file)
 
 
 @app.command()

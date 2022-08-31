@@ -5,9 +5,10 @@ for the scrapers and the cli
 
 import json
 from time import sleep
-from typer import Exit
+import typer
 from typing import Callable, Dict, Literal, Optional
 from cwm_downloader.exceptions import InvalidCredentialsError
+from cwm_downloader import __app_name__
 from requests.structures import CaseInsensitiveDict
 from requests.utils import cookiejar_from_dict
 from requests import Session, exceptions as rqexceptions
@@ -24,22 +25,6 @@ from rich.progress import (
     TimeRemainingColumn,
     TransferSpeedColumn,
 )
-
-
-def get_progress_bar():
-    """ Generate a progress bar with a predefined config """
-    return Progress(
-        TextColumn("[bold blue]{task.fields[filename]}", justify="right"),
-        BarColumn(bar_width=None),
-        "[progress.percentage]{task.percentage:>3.1f}%",
-        "•",
-        DownloadColumn(),
-        "•",
-        TransferSpeedColumn(),
-        "•",
-        TimeRemainingColumn(),
-    )
-
 
 # Mapping the the error types with their styles
 message_type_color = {
@@ -60,30 +45,64 @@ credentials_template: credentials_type = {
     'cookies': {},
 }
 
+# Get the app directory using typer.get_app_dir
+APP_DIR = Path(typer.get_app_dir(__app_name__))
+# And set the credentials.json path
+# currently we don't really care if it exists or not
+# we are going to validate that in load_credentials
+CREDENTIALS_FILE = APP_DIR / 'credentials.json'
 
-def create_credentials(credentials_file: Path):
+
+def load_credentials():
+    """ Return an existing credentials_file path"""
+    # First check if the CREDENTIALS_FILE doesn't exist and
+    # if it doesn't then create one with create_credentials
+    if not CREDENTIALS_FILE.is_file():
+        create_credentials()
+    return CREDENTIALS_FILE
+
+
+def create_credentials():
     """
     Create a credentials file with a predefined template
 
     :param credentials_file: The path of the credentials file to create
     """
     credentials_data = json.dumps(credentials_template)
-    credentials_file.write_text(credentials_data)
+    CREDENTIALS_FILE.write_text(credentials_data)
 
 
-def get_credentials(credentials_file: Path) -> credentials_type:
+def get_credentials() -> credentials_type:
     """
     Get the credentials and load it to a python dict and if it isn't valid
     raise an InvalidCredentialsError
 
     :param credentials_file: The file to open and read for the credentials
     """
+    # Load the credentials.json file
+    credentials_file = load_credentials()
+
     credentials_dict = json.loads(credentials_file.read_text())
     # Check if the headers and cookies are not inside the dictionary
     # and raise an error if they are not.
     if 'headers' not in credentials_dict or 'cookies' not in credentials_dict:
         raise InvalidCredentialsError('The contents in credentials.json are invalid.')
     return credentials_dict
+
+
+def get_progress_bar():
+    """ Generate a progress bar with a predefined config """
+    return Progress(
+        TextColumn("[bold blue]{task.fields[filename]}", justify="right"),
+        BarColumn(bar_width=None),
+        "[progress.percentage]{task.percentage:>3.1f}%",
+        "•",
+        DownloadColumn(),
+        "•",
+        TransferSpeedColumn(),
+        "•",
+        TimeRemainingColumn(),
+    )
 
 
 def render_message(message_type: Literal['info', 'warning', 'error'], message: str, question=False, end: str = '\n', start: str = '', styles: str = '[default white]'):
@@ -124,7 +143,7 @@ def handle_range_error(func: Callable):
             return func(*args, **kwargs)
         except IndexError:
             render_message('error', 'The specified section or lecture doesn\'t exist.')
-            raise Exit(1)
+            raise typer.Exit(1)
     return decorated_func
 
 
@@ -140,7 +159,7 @@ def handle_invalid_credentials(func: Callable):
         except InvalidCredentialsError:
             render_message('error', f'The content inside credentials.json is not valid. Please add the appropriate headers and cookies.')
             render_message('info', 'Use the --edit-credentials flag to edit the credentials.')
-            raise Exit(1)
+            raise typer.Exit(1)
     return decorated_func
 
 
@@ -163,7 +182,7 @@ def handle_keyboard_interrupt_for_files(func: Callable):
                 render_message('warning', 'Process interupted. cleaning up...')
                 file_path.unlink(missing_ok=True)
                 render_message('info', 'Cleanup was succesfull')
-                raise Exit(0)
+                raise typer.Exit(0)
     return decorated_func
 
 
@@ -202,7 +221,7 @@ def handle_network_errors(func: Callable):
 
 
 @handle_invalid_credentials
-def initialize_session(credentials_file: Path):
+def initialize_session():
     """
     Initialize a session with the headers and cookies that are found
     from the credentials_file.
@@ -210,7 +229,7 @@ def initialize_session(credentials_file: Path):
     :param credentials_file: The file to read the headers and cookies.
     """
     session = Session()
-    credentials = get_credentials(credentials_file)
+    credentials = get_credentials()
     session.cookies = cookiejar_from_dict(credentials['cookies'])
     session.headers = CaseInsensitiveDict(credentials['headers'])
     return session
