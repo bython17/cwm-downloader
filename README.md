@@ -74,7 +74,7 @@ Now you are ready to run and use the program! 😎
 
 The app is a CLI, so you can use the `--help` option to learn more about the commands. But here are the basics
 
-**Tip** to use the ` cwm-downloader` command the below: First run `poetry shell` which creates a child shell or skip around to the bottom to make the command global. If you don't mind typing a longer command then you can use ` poetry run cwm-downloader` to run the command from the project root.
+**Tip** to use the ` cwm-downloader` command like the below: First run `poetry shell` which creates a child shell or skip around to the bottom to make the command global. If you don't mind typing a longer command then you can use ` poetry run cwm-downloader` to run the command from the project root.
 
 **Download all the courses**
 To do that just execute the command with the download sub command and give it the url. For example let's download part one of the brand new C++ course.
