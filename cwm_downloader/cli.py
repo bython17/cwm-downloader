@@ -14,14 +14,6 @@ import typer
 app = typer.Typer(pretty_exceptions_show_locals=False, no_args_is_help=True)  # Disable showing the locals when an exception occurs.
 
 
-def get_safe_base_app_dir():
-    """ Get the app's config directory safely (create it even if it doesn't exist). """
-    app_base_dir = Path(typer.get_app_dir('cwm-downloader'))
-    if not app_base_dir.exists():
-        app_base_dir.mkdir(parents=True)
-    return app_base_dir
-
-
 def _version_callback(value: bool):
     if value:
         typer.echo(f"{__app_name__} v{__version__}")

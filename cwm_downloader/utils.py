@@ -45,8 +45,18 @@ credentials_template: credentials_type = {
     'cookies': {},
 }
 
-# Get the app directory using typer.get_app_dir
-APP_DIR = Path(typer.get_app_dir(__app_name__))
+
+def get_safe_base_app_dir():
+    """ Get the app's config directory safely (create it even if it doesn't exist). """
+    app_base_dir = Path(typer.get_app_dir(__app_name__))
+    if not app_base_dir.exists():
+        app_base_dir.mkdir(parents=True)
+    return app_base_dir
+
+
+# Get the app directory using get_safe_app_dir
+# which will create the dir if it doesn't exist
+APP_DIR = get_safe_base_app_dir()
 # And set the credentials.json path
 # currently we don't really care if it exists or not
 # we are going to validate that in load_credentials
