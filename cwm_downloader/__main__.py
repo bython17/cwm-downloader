@@ -9,3 +9,6 @@ from cwm_downloader.cli import app
 def main():
     """ Run the cli """
     app(prog_name=__app_name__)
+
+
+main()
