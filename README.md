@@ -18,7 +18,7 @@ For along time I watched Mosh's youtube channel where he only shows a tiny part 
 
 #### Install poetry
 
-To use this program you need to have python 3 installed. After that install [poetry](https://python-poetry.org/). Using
+This project uses poetry for dependency management, building and generating a cli command. So to install [poetry](https://python-poetry.org/). run
 
 ```bash
 $ python -m pip install poetry
@@ -36,13 +36,11 @@ $ git clone https://github.com/bython17/cwm-downloader && cd cwm-downloader
 
 #### Install dependencies and setup the CLI using poetry
 
-This project uses poetry for dependency management, building and generating a cli command. To do this run
-
 ```bash
 $ poetry install
 ```
 
-Now all dependencies should be installed in a venv and you can issue the command without using python like ` cwm-downloader --help`.
+Now all dependencies should be installed in a venv and you can issue the command without using python like ` cwm-downloader --help` after typing ```poetry shell```
 
 #### Edit the credentials.json file
 
@@ -97,23 +95,21 @@ This will tell the downloader you want to download that specifiec lecture only a
 **Download a course from a specific point on wards**
 To do that just specifiy the point you want to start and don't specifiy the ` --only` flag.
 
-There are a few more commands to customize so to do those just run
+There are a few more commands to play around with just check em out using
 
 ```
 cwm-downloader --help
 ```
 
-For the main help message and
+And you can also see the help message for the download subcommand
 
 ```
 cwm-downloader download --help
 ```
 
-To customize the download
-
 ### Making the command global
 
-If you are tired of going to the project directory every time you want to download a course then you can make it global by installing it using pip.
+If you are tired of going to the project directory every time and download the courses (you should be unless you are a psycho) then you can make it global by installing it using pip.
 
 Navigate to the projects root directory for the last time and run
 
@@ -124,12 +120,13 @@ poetry build
 Poetry will now generate a dist directory which contains a wheel file that is installable by pip so run
 
 ```
-pip install dist/cwm_downloader-0.1.0-py3-none-any.whl
+pip install dist/cwm_downloader-0.1.0-py3-none-any.
 ```
+Or you can install the ```tar.gz``` file that is in the same directory. 
 
-**Note** Make sure that you run this outside a child shell or activating the virtual environment.
+**Note** Make sure that you run this outside a child shell or while not in a venv just to be safe.
 
-**Horay 😃** Now you can access the command from any where in your computer !
+and **Horay 😃** Now you can access the command from any where in your computer !
 
 ### Contributions
 
