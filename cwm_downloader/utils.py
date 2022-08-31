@@ -69,6 +69,7 @@ def create_credentials():
     :param credentials_file: The path of the credentials file to create
     """
     credentials_data = json.dumps(credentials_template)
+    CREDENTIALS_FILE.touch(exist_ok=True)
     CREDENTIALS_FILE.write_text(credentials_data)
 
 
