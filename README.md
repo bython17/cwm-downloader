@@ -2,6 +2,8 @@
 
 This is a python CLI program made for downloading enrolled courses and lectures from https://codewithmosh.com. This program allows you to download full courses, sections and lectures with ease. This program requires a valid credentials(headers and cookies) of an enrolled user to function.
 
+**Note:** **This project is only valid for people who have a valid account Or if the courses are free and are not locked. The project has no malicious intents what so ever.**
+
 ### Motivation for the project
 
 For along time I watched Mosh's youtube channel where he only shows a tiny part of the full course. This made me eager to buy his courses and I ended up subscribing to the monthly subscription plan. But then I wanted to download alot of courses from the site so using my tiny python skills I made [cwm-downloader-old](https://github.com/bython17/cwm-downloader-old) but that didn't seem clean and was kinda bulky. So I rewrote it again and here it is.
@@ -103,6 +105,26 @@ cwm-downloader download --help
 ```
 
 To customize the download
+
+### Making the command global
+
+If you are tired of going to the project directory every time you want to download a course then you can make it global by installing it using pip.
+
+Navigate to the projects root directory for the last time and run
+
+```
+poetry build
+```
+
+Poetry will now generate a dist directory which contains a wheel file that is installable by pip so run
+
+```
+pip install --user dist/cwm_downloader-0.1.0-py3-none-any.whl
+```
+
+**Note** Make sure that you run this outside a child shell or activating the virtual environment.
+
+**Horay 😃** Now you can access the command from any where in your computer !
 
 ### Contributions
 
