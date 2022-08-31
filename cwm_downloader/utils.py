@@ -17,6 +17,7 @@ from pathlib import Path, PurePath
 from functools import wraps
 from rich import print as rprint
 from rich.prompt import Confirm
+from rich.status import Status
 from rich.progress import (
     BarColumn,
     DownloadColumn,
@@ -116,6 +117,10 @@ def get_progress_bar():
         "•",
         TimeRemainingColumn(),
     )
+
+
+def get_status(message: str):
+    return Status(message)
 
 
 def render_message(message_type: Literal['info', 'warning', 'error'], message: str, question=False, end: str = '\n', start: str = '', styles: str = '[default white]'):
@@ -225,6 +230,8 @@ def handle_network_errors(func: Callable):
             render_message('error', str(error))
             sleep(5)
             return decorated_func(*args, **kwargs)
+        except typer.Exit as err:
+            raise typer.Exit(err.exit_code)
         except Exception as error:
             render_message('error', 'Unknown error occured retrying...')
             render_message('error', str(error))

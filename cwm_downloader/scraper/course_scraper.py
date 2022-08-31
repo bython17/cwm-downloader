@@ -6,7 +6,7 @@ from pathlib import Path
 from cwm_downloader.scraper.lecture_scraper import Lecture
 from cwm_downloader.scraper._scraper import Scraper
 from urllib.parse import urljoin
-from cwm_downloader.utils import render_message, handle_range_error
+from cwm_downloader.utils import render_message, handle_range_error, get_status
 
 
 class Course(Scraper):
@@ -28,14 +28,17 @@ class Course(Scraper):
         Since this method uses Lecture.download under the hood the rest of the
         key worded arguments will be used to customize Lecture.download 
         """
-        # If all_sections(which is a dictionary that can be get from self.get_all_sections) is not provided then
-        # get the all_sections (just to make the app a bit efficient)
-        if not all_sections:
-            all_sections = self.get_all_sections()
-        # Get the name of the section using the seciton number
-        section_name_to_download = list(all_sections.keys())[section_no]
-        # Get the lecture we want from the all_sections dict
-        lecture_to_download = all_sections[section_name_to_download][lecture_no]
+        # Create a spinning status for the download intialization
+        with get_status('[bold]Initializing Download'):
+            # If all_sections(which is a dictionary that can be get from self.get_all_sections) is not provided then
+            # get the all_sections (just to make the app a bit efficient)
+            if not all_sections:
+                all_sections = self.get_all_sections()
+            # Get the name of the section using the seciton number
+            section_name_to_download = list(all_sections.keys())[section_no]
+            # Get the lecture we want from the all_sections dict
+            lecture_to_download = all_sections[section_name_to_download][lecture_no]
+        render_message('info', f'Downloading "{lecture_to_download}" from course "{self}"')
         lecture_to_download.download(base_dir, **lecture_download_args)
 
     @handle_range_error
@@ -51,12 +54,14 @@ class Course(Scraper):
         Since this method uses Lecture.download under the hood the rest of the
         key worded arguments will be used to customize Lecture.download 
         """
-        # If all_sections(which is a dictionary that can be get from self.get_all_sections) is not provided then
-        # get the all_sections (just to make the app a bit efficient)
-        if not all_sections:
-            all_sections = self.get_all_sections()
+        # Create a spinning status for the download intialization
+        with get_status('[bold]Initializing Download'):
+            # If all_sections(which is a dictionary that can be get from self.get_all_sections) is not provided then
+            # get the all_sections (just to make the app a bit efficient)
+            if not all_sections:
+                all_sections = self.get_all_sections()
 
-        section_to_download: str = list(all_sections.keys())[section_no]
+            section_to_download: str = list(all_sections.keys())[section_no]
         render_message('info', f'Starting section [bold blue]{section_to_download}', start='\n', end='\n\n')
 
         # Create the section directory which houses all lectures
@@ -80,18 +85,25 @@ class Course(Scraper):
         Since this method uses the download_section method under the hood the rest
         of the key worded arguments passed are used to customize download_section.
         """
-        # Get the sections and lectures which is a dictionary which maps each section to a list of its lectures
-        all_sections = self.get_all_sections()
+        # Create a spinning status for the download intialization
+        with get_status('[bold]Initializing Download'):
+            # Get the sections and lectures which is a dictionary which maps each section to a list of its lectures
+            all_sections = self.get_all_sections()
 
-        # Slice the section from the provided section onwards
-        sections_to_download = list(all_sections.keys())[section_no:]
+            # Slice the section from the provided section onwards
+            sections_to_download = list(all_sections.keys())[section_no:]
 
-        # Create the course directory inside the base_dir provided.
-        course_dir = base_dir / str(self)
-        course_dir.mkdir(exist_ok=True)
+            # Create the course directory inside the base_dir provided.
+            course_dir = base_dir / str(self)
+            course_dir.mkdir(exist_ok=True)
 
-        # Loop over the enumerations of the selected sections to get the indexes and pass the to download_section which
-        # downloads an indivisual section using the seciton number.
+            # Loop over the enumerations of the selected sections to get the indexes and pass the to download_section which
+            # downloads an indivisual section using the seciton number.
+        # The section_no+1 or lecture_no+1 is because this function get's passed
+        # inices less that 1 that of normal indices and since the following message
+        # gets printed to the user we gotta +1 to it again
+        render_message('info', f'Downloading Course {self}')
+        render_message('info', f'From [blue]Section {section_no+1}[/] and [blue]From Lecture {lecture_no+1}[/]')
         for index, _ in enumerate(sections_to_download):
             # If it is the first section then apply the lecture_no specified
             if index == 0:
