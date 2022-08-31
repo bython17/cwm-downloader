@@ -59,10 +59,13 @@ The app relies on a json file that contains the headers and cookies of a valid a
   - Select the sub option "copy all as cURL" from the option copy
 - Go to https://www.scrapingbee.com/curl-converter/json/ and paste the cURL you copied on the space provided and copy the final json output to your clipboard.
 - Assuming you run `poetry install` , let's edit the credentials.json file to do that run the following command inside the root dir of the project
+
   ```bash
   poetry run cwm-downloader --edit-credentials
   ```
+
   **_Note_** We did the the `poetry run` because we need to use the venv's python and bin not the globals. If you want you can also spawn a child shell using `poetry shell` and then run `cwm-downloader` .
+
 - When the editor opens with the credentials.json file, delete all the contents inside and paste the contents you copied from https://www.scrapingbee.com/curl-converter/json/.
 
 Now you are ready to run and use the program! 😎
@@ -70,6 +73,8 @@ Now you are ready to run and use the program! 😎
 ### Usage
 
 The app is a CLI, so you can use the `--help` option to learn more about the commands. But here are the basics
+
+**Tip** to use the ` cwm-downloader` command the below: First run `poetry shell` which creates a child shell or skip around to the bottom to make the command global. If you don't mind typing a longer command then you can use ` poetry run cwm-downloader` to run the command from the project root.
 
 **Download all the courses**
 To do that just execute the command with the download sub command and give it the url. For example let's download part one of the brand new C++ course.
