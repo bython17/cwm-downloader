@@ -124,7 +124,7 @@ poetry build
 Poetry will now generate a dist directory which contains a wheel file that is installable by pip so run
 
 ```
-pip install --user dist/cwm_downloader-0.1.0-py3-none-any.whl
+pip install dist/cwm_downloader-0.1.0-py3-none-any.whl
 ```
 
 **Note** Make sure that you run this outside a child shell or activating the virtual environment.
