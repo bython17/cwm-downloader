@@ -21,7 +21,7 @@ For along time I watched Mosh's youtube channel where he only shows a tiny part 
 This project uses poetry for dependency management, building and generating a cli command. So to install [poetry](https://python-poetry.org/). run
 
 ```bash
-$ python -m pip install poetry
+python -m pip install poetry
 ```
 
 Or go to the [docs](https://python-poetry.org/docs/) and install poetry using another way.
@@ -31,13 +31,13 @@ Or go to the [docs](https://python-poetry.org/docs/) and install poetry using an
 Clone the repo and move in to it
 
 ```bash
-$ git clone https://github.com/bython17/cwm-downloader && cd cwm-downloader
+git clone https://github.com/bython17/cwm-downloader && cd cwm-downloader
 ```
 
 #### Install dependencies and setup the CLI using poetry
 
 ```bash
-$ poetry install
+poetry install
 ```
 
 Now all dependencies should be installed in a venv and you can issue the command without using python like ` cwm-downloader --help` after typing ```poetry shell```
