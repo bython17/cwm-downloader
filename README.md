@@ -120,7 +120,7 @@ poetry build
 Poetry will now generate a dist directory which contains a wheel file that is installable by pip so run
 
 ```
-pip install dist/cwm_downloader-0.1.0-py3-none-any.
+pip install dist/cwm_downloader-0.1.0-py3-none-any.whl
 ```
 Or you can install the ```tar.gz``` file that is in the same directory. 
 
