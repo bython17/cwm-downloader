@@ -1,6 +1,6 @@
 ## Code With Mosh Downloader
 
-This is a python CLI program made for downloading enrolled courses and lectures from https://codewithmosh.com. This program allows you to download full courses, sections and lectures with ease. This program requires a valid credentials(headers and cookies) of an enrolled user to function.
+This is a python CLI program made for downloading enrolled courses and lectures from https://codewithmosh.com including all exercises and pdfs needed. This program allows you to download full courses, sections and lectures with ease. This program requires a valid credentials(headers and cookies) of an enrolled user to work.
 
 **Note:** **This project is only valid for people who have a valid account Or if the courses are free and are not locked. The project has no malicious intents what so ever.**
 
