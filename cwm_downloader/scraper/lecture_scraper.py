@@ -7,16 +7,12 @@ from bs4 import Tag
 from rich.progress import Progress, TaskID
 from typing import Dict, Iterable, Literal
 from cwm_downloader.scraper._scraper import Scraper
-from cwm_downloader.utils import get_progress_bar, handle_keyboard_interrupt_for_files, handle_network_errors, render_message
+from cwm_downloader.utils import get_progress_bar, handle_keyboard_interrupt_for_files, handle_network_errors, render_message, sterialize_file_or_folder
 from cwm_downloader.scraper.markup_template import create_markup
 
 # These are two possible types of a lecture that are
 # either a video type or a text type.
 LectureType = Literal['video', 'text']
-# These are the carachters which are forbidden in filenames (mainly in windows)
-# We are gonne sterilize the filenames in the Lecture class later.
-FORBIDDEN_CHARACTERS = r'<>:"/\|?*'
-
 
 class Lecture(Scraper):
     """
@@ -92,22 +88,6 @@ class Lecture(Scraper):
         return f"{lecture_number}- resource_{resource_name}"
 
     @staticmethod
-    def sterilize_filename(file_name: str):
-        """ 
-        Sterialize a file names by striping out all the FORBIDEN_CHARACHTERS and keeping
-        other filename rules.
-
-        :param file_name: The name of the file to be sterialized
-        """
-        for character in file_name:
-            if character in FORBIDDEN_CHARACTERS:
-                file_name = file_name.replace(character, '')
-        # Split the file name by the . sybmbol (which results in a filename and an extension most of the time) and then filter
-        # the list for empty strings(this means that the those were extra "." left) and strip each of the rest.
-        file_name_list = [file_name_section.strip() for file_name_section in file_name.split('.') if file_name_section.strip() != '']
-        return '.'.join(file_name_list)
-
-    @staticmethod
     def should_overwrite(file_path: Path, noconfirm=False):
         """
         Ask to overwrite the file_path if it exists and noconfirm is false
@@ -133,7 +113,7 @@ class Lecture(Scraper):
         lecture_type = self.get_type()
         download_names_urls = self.get_download_names_and_urls()
         if lecture_type == 'text':
-            filename = self.sterilize_filename(f"{str(self)}.html")
+            filename = sterialize_file_or_folder(f"{str(self)}.html")
             file_path = base_dir / filename
             if self.should_overwrite(file_path, noconfirm):
                 # We initialize progress bars here because if it was initialized at the top level
@@ -146,7 +126,7 @@ class Lecture(Scraper):
                     self.__download_text(file_path, progress_bar, current_task_id)
         if download_names_urls is not None:
             for download_name, download_url in download_names_urls.items():
-                filename = self.sterilize_filename(download_name)
+                filename = sterialize_file_or_folder(download_name)
                 if filename.split('.')[-1] != 'mp4':
                     # This means that the downloadable thing is a resource so
                     # we use the self.get_resource_name to get the resource name

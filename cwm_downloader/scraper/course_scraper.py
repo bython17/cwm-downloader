@@ -6,7 +6,7 @@ from pathlib import Path
 from cwm_downloader.scraper.lecture_scraper import Lecture
 from cwm_downloader.scraper._scraper import Scraper
 from urllib.parse import urljoin
-from cwm_downloader.utils import render_message, handle_range_error, get_status
+from cwm_downloader.utils import render_message, handle_range_error, get_status, sterialize_file_or_folder
 
 
 class Course(Scraper):
@@ -65,7 +65,7 @@ class Course(Scraper):
         render_message('info', f'Starting section [bold blue]{section_to_download}', start='\n', end='\n\n')
 
         # Create the section directory which houses all lectures
-        section_dir = base_dir / section_to_download
+        section_dir = base_dir / sterialize_file_or_folder(section_to_download)
         section_dir.mkdir(exist_ok=True)
 
         # Get the lectures to download in the "section_to_download" key
@@ -94,13 +94,14 @@ class Course(Scraper):
             sections_to_download = list(all_sections.keys())[section_no:]
 
             # Create the course directory inside the base_dir provided.
-            course_dir = base_dir / str(self)
+            # Sterialize the folder names to address the issue #2
+            course_dir = base_dir / sterialize_file_or_folder(str(self))
             course_dir.mkdir(exist_ok=True)
 
             # Loop over the enumerations of the selected sections to get the indexes and pass the to download_section which
             # downloads an indivisual section using the seciton number.
         # The section_no+1 or lecture_no+1 is because this function get's passed
-        # inices less that 1 that of normal indices and since the following message
+        # indices less that 1 that of normal indices and since the following message
         # gets printed to the user we gotta +1 to it again
         render_message('info', f'Downloading Course {self}')
         render_message('info', f'From [blue]Section {section_no+1}[/] and [blue]From Lecture {lecture_no+1}[/]')

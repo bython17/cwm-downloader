@@ -63,6 +63,10 @@ APP_DIR = get_safe_base_app_dir()
 # we are going to validate that in load_credentials
 CREDENTIALS_FILE = APP_DIR / 'credentials.json'
 
+# Forbidden file and foldre name characters
+# mainly for windows but also for linux.
+FORBIDDEN_CHARACTERS = r'<>:"/\|?*'
+
 
 def load_credentials():
     """ Return an existing credentials_file path"""
@@ -238,6 +242,22 @@ def handle_network_errors(func: Callable):
             sleep(5)
             return decorated_func(*args, **kwargs)
     return decorated_func
+
+
+def sterialize_file_or_folder(file_name: str):
+    """ 
+    Sterialize a file names by striping out all the FORBIDEN_CHARACHTERS and keeping
+    other filename rules.
+
+    :param file_name: The name of the file to be sterialized
+    """
+    for character in file_name:
+        if character in FORBIDDEN_CHARACTERS:
+            file_name = file_name.replace(character, '')
+    # Split the file name by the . sybmbol (which results in a filename and an extension most of the time) and then filter
+    # the list for empty strings(this means that the those were extra "." left) and strip each of the rest.
+    file_name_list = [file_name_section.strip() for file_name_section in file_name.split('.') if file_name_section.strip() != '']
+    return '.'.join(file_name_list)
 
 
 @handle_invalid_credentials
