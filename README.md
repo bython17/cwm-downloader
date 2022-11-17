@@ -6,7 +6,7 @@ This is a python CLI program made for downloading enrolled courses and lectures 
 
 ### Motivation for the project
 
-For along time I watched Mosh's youtube channel where he only shows a tiny part of the full course. This made me eager to buy his courses and I ended up subscribing to the monthly subscription plan. But then I wanted to download alot of courses from the site so using my tiny python skills I made [cwm-downloader-old](https://github.com/bython17/cwm-downloader-old) but that didn't seem clean and was kinda bulky. So I rewrote it again and here it is.
+For along time I watched Mosh's youtube channel where he only shows a tiny part of the full course. This made me eager to buy his courses and I ended up subscribing to the monthly subscription plan. But then I wanted to download alot of courses from the site so using my python skills I made [cwm-downloader-old](https://github.com/bython17/cwm-downloader-old) but that didn't seem clean and was kinda bulky. So I rewrote it again and here it is.
 
 **Note** Currently my subscription has ended and I can't test the app properly anymore. So I would appreciate contributions alot. Read more about contribution's at the bottom.
 
@@ -26,7 +26,7 @@ python -m pip install poetry
 
 Or go to the [docs](https://python-poetry.org/docs/) and install poetry using another way.
 
-#### clone the repo
+#### Clone the repo
 
 Clone the repo and move in to it
 
@@ -37,8 +37,14 @@ git clone https://github.com/bython17/cwm-downloader && cd cwm-downloader
 #### Install dependencies and setup the CLI using poetry
 
 ```bash
-poetry install
+python -m poetry install
 ```
+or
+```bash
+poetry install
+``` 
+*If you installed poetry globally.*
+
 
 Now all dependencies should be installed in a venv and you can issue the command without using python like ` cwm-downloader --help` after typing ```poetry shell```
 
@@ -130,4 +136,4 @@ and **Horay 😃** Now you can access the command from any where in your compute
 
 ### Contributions
 
-I have tried to document my code very well to make it easy to understand. I am not a pro python engineer by any means just a high school kid who fell in love with code. So I would greatly appreciate any comments and code reviews from the community and If you have a great feature in mind don't forget to hit that pull request 😁. Thanks
+I have tried to document my code very well to make it easy to understand. I am not a pro python engineer by any means just a high school kid who loves to code. So I would greatly appreciate any comments and code reviews from the community and If you have a great feature in mind don't forget to hit that pull request 😁. Thanks
