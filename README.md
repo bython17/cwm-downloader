@@ -1,22 +1,23 @@
-## Code With Mosh Downloader
+# Code With Mosh Downloader
 
 This is a python CLI program made for downloading enrolled courses and lectures from https://codewithmosh.com including all exercises and pdfs needed. This program allows you to download full courses, sections and lectures with ease. This program requires a valid credentials(headers and cookies) of an enrolled user to work.
 
 **Note:** **This project is only valid for people who have a valid account Or if the courses are free and are not locked. The project has no malicious intents what so ever.**
 
-### Motivation for the project
+## Motivation for the project
 
 For along time I watched Mosh's youtube channel where he only shows a tiny part of the full course. This made me eager to buy his courses and I ended up subscribing to the monthly subscription plan. But then I wanted to download alot of courses from the site so using my python skills I made [cwm-downloader-old](https://github.com/bython17/cwm-downloader-old) but that didn't seem clean and was kinda bulky. So I rewrote it again and here it is.
 
 **Note** Currently my subscription has ended and I can't test the app properly anymore. So I would appreciate contributions alot. Read more about contribution's at the bottom.
-
-### Requirements
+<br>
+<br>
+## Requirements
 
 - Python 3
+<br>
+## Installation
 
-### Installation
-
-#### Install poetry
+### Install poetry
 
 This project uses poetry for dependency management, building and generating a cli command. So to install [poetry](https://python-poetry.org/). run
 
@@ -26,7 +27,9 @@ python -m pip install poetry
 
 Or go to the [docs](https://python-poetry.org/docs/) and install poetry using another way.
 
-#### Clone the repo
+<br>
+
+### Clone the repo
 
 Clone the repo and move in to it
 
@@ -34,8 +37,21 @@ Clone the repo and move in to it
 git clone https://github.com/bython17/cwm-downloader && cd cwm-downloader
 ```
 
-#### Install dependencies and setup the CLI using poetry
+<br>
 
+### Install dependencies and setup the CLI using poetry
+
+**NOTICE**: If you are a windows user, you need to enable the [Windows Long Path](https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=powershel) in order to install the dependencies. To enable [Windows Long Path](https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=powershel) you can execute the following PowerShell script(Windows 10, Version 1607, and Later)
+
+```powershell
+New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" `
+-Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
+```
+Learn more at [Microsoft](https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=powershel)
+
+<br>
+
+To install all the dependencies run
 ```bash
 python -m poetry install
 ```
@@ -48,7 +64,9 @@ poetry install
 
 Now all dependencies should be installed in a venv and you can issue the command without using python like ` cwm-downloader --help` after typing ```poetry shell```
 
-#### Edit the credentials.json file
+<br>
+
+### Edit the credentials.json file
 
 The app relies on a json file that contains the headers and cookies of a valid account that is enrolled in some sort of course or lecture. To get the valid cookies and headers follow these simple steps.
 
@@ -74,13 +92,17 @@ The app relies on a json file that contains the headers and cookies of a valid a
 
 Now you are ready to run and use the program! 😎
 
-### Usage
+<br>
+
+## Usage
 
 The app is a CLI, so you can use the `--help` option to learn more about the commands. But here are the basics
 
 **Tip** to use the ` cwm-downloader` command like the below: First run `poetry shell` which creates a child shell or skip around to the bottom to make the command global. If you don't mind typing a longer command then you can use ` poetry run cwm-downloader` to run the command from the project root.
 
-**Download all the courses**
+
+**Download all lectures**
+<br>
 To do that just execute the command with the download sub command and give it the url. For example let's download part one of the brand new C++ course.
 
 ```
@@ -88,8 +110,10 @@ cwm-downloader download https://codewithmosh.com/courses/ultimate-c-plus-plus-pa
 ```
 
 This should download all the sections and lectures of the course. and btw you can use any lecture URL that is found on that course.
-
+<br>
+<br>
 **Download only one lecture**
+<br>
 To download a single lecture you can do this
 
 ```
@@ -97,8 +121,10 @@ cwm-downloader download https://codewithmosh.com/courses/ultimate-c-plus-plus-pa
 ```
 
 This will tell the downloader you want to download that specifiec lecture only and nothin after that. notice here we specified a section because we need sections to get the correct lecture. if no section is given it is going to default to the first one.
-
+<br>
+<br>
 **Download a course from a specific point on wards**
+<br>
 To do that just specifiy the point you want to start and don't specifiy the ` --only` flag.
 
 There are a few more commands to play around with just check em out using
@@ -113,7 +139,7 @@ And you can also see the help message for the download subcommand
 cwm-downloader download --help
 ```
 
-### Making the command global
+## Making the command global
 
 If you are tired of going to the project directory every time and download the courses (you should be unless you are a psycho) then you can make it global by installing it using pip.
 
@@ -134,6 +160,6 @@ Or you can install the ```tar.gz``` file that is in the same directory.
 
 and **Horay 😃** Now you can access the command from any where in your computer !
 
-### Contributions
+## Contributions
 
 I have tried to document my code very well to make it easy to understand. I am not a pro python engineer by any means just a high school kid who loves to code. So I would greatly appreciate any comments and code reviews from the community and If you have a great feature in mind don't forget to hit that pull request 😁. Thanks
