@@ -25,6 +25,7 @@ def _edit_credentials_callback(value: bool):
     if value:
         # Load the credentials file
         credentials_file = load_credentials()
+        render_message("info", f"Credentials File Path: {credentials_file}")
         exit_code = typer.launch(str(credentials_file), wait=True)
         if exit_code == 0:
             # This means every thing is fine and the editor of the os reuturned an exit code of 0

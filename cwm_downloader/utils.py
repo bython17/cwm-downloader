@@ -49,7 +49,9 @@ credentials_template: credentials_type = {
 
 def get_safe_base_app_dir():
     """ Get the app's config directory safely (create it even if it doesn't exist). """
-    app_base_dir = Path(typer.get_app_dir(__app_name__))
+    # Resolving the directories helps for symlinks and otherthings
+    # basically it allows us to get the absolute path of the application.
+    app_base_dir = Path(typer.get_app_dir(__app_name__)).resolve()
     if not app_base_dir.exists():
         app_base_dir.mkdir(parents=True)
     return app_base_dir
