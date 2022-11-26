@@ -29,7 +29,7 @@ First navigate to the directory  where you downloaded the wheel file and execute
 ```bash
 pip install [whl-file]
 ```
-_Replace the `whl-file` with the python wheel file you downloaded_
+_Replace the `[whl-file]` with the python wheel file you downloaded_
 
 Even though it isn't recommended, you can use the sdist(`.tar.gz`) file to install the project.
 
