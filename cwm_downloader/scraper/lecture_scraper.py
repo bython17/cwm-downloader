@@ -99,7 +99,7 @@ class Lecture(Scraper):
             resource_name += ".mp4"
         try:
             # Try to format the lecture number to a 2 digit number
-            lecture_number = f"{int(lecture_number):02d}"
+            lecture_number = f"{int(str(lecture_number)):02d}"
         except ValueError:
             pass  # not interested, if it's not a number, keep the string as it is
         return f"{lecture_number}-resource_{resource_name}"
