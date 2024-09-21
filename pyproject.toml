@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "cwm-downloader"
-version = "0.1.1"
+version = "0.1.2"
 description = "A python cli program that can download enrolled courses from https://codewithmosh.com given the valid login credentials(headers and cookies)."
 authors = ["Bezaleel Wondimagegn <92359779+bython17@users.noreply.github.com>"]
 license="Apache-2.0"
