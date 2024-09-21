@@ -18,7 +18,7 @@ class Scraper(ABC):
     for Lecture and Course.
     """
 
-    base_url = "https://codewithmosh.com"
+    base_url = "https://members.codewithmosh.com"
     # ElementSelectors is an enum containing all the css selectors needed
     # To scrape the site.
     element_selectors = ElementSelectors

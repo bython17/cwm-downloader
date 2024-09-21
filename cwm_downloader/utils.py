@@ -107,6 +107,9 @@ def get_credentials() -> credentials_type:
     # and raise an error if they are not.
     if 'headers' not in credentials_dict or 'cookies' not in credentials_dict:
         raise InvalidCredentialsError('The contents in credentials.json are invalid.')
+    # remove Accept-Encoding from the headers to remove compression
+    if "Accept-Encoding" in credentials_dict["headers"]:
+        del credentials_dict["headers"]["Accept-Encoding"]
     return credentials_dict
 
 

@@ -122,7 +122,7 @@ class Course(Scraper):
         # get a list of all section_names or lecture_anchor_tags which is not wanted. So by selecting the container
         # we can pass the section_container as the source to Scraper.select_element.
         section_lectures = {
-            f"{index + 1}- {self.select_element(self.element_selectors.section_names, section_container, single=True).get_text(strip=True)}": [
+            f"{index + 1}-{self.select_element(self.element_selectors.section_names, section_container, single=True).get_text(strip=True)}": [
                 # Since we get the relative url of the lectures when using the href attribute of the anchor tags,
                 # we can use urljoin which smartly joins the base url with the relative url.
                 Lecture(urljoin(self.base_url, lecture.get('href')), self.session, self.timeout) for lecture in self.select_element(self.element_selectors.lecture_anchor_tags, section_container)

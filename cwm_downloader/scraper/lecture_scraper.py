@@ -20,7 +20,7 @@ class Lecture(Scraper):
     with a download class).
     """
 
-    def get_download_names_and_urls(self) -> Dict[str, str] | None:
+    def get_download_names_and_urls(self) -> Dict[str|None, str] | None:
         """ Get all downloadable urls with their filenames as a dictionary. """
         # Select all elements with the download_tags element selector
         # Recognize that raise_if_not_found is False that makes it so even if
@@ -29,7 +29,16 @@ class Lecture(Scraper):
         download_tags = self.select_element(self.element_selectors.download_tags, raise_if_not_found=False)
         if download_tags is None:
             return None
-        return {tag.get('data-x-origin-download-name'): tag.get('href') for tag in download_tags}
+        result = {}
+        for tag in download_tags:
+            orig_name = tag.get("data-x-origin-download-name")
+            url = tag.get("href")
+            if "://" not in url:
+                # This means that the url is a relative url so we need to join it with the base url
+                url = self.base_url + url
+            result[orig_name] = url
+            # having result[None] will result in only one entry for all links without data-x-origin-download-name
+        return result
 
     def decompose_elements(self, element_selectors: Iterable[str], source: Tag) -> None:
         """ 
@@ -85,7 +94,15 @@ class Lecture(Scraper):
             resource_name = '-'.join(bare_resource_name.split('-')[1:]).strip()
         else:
             resource_name = bare_resource_name.strip()
-        return f"{lecture_number}- resource_{resource_name}"
+        # if we have no extension, assume it's a video in mp4 format
+        if "." not in resource_name:
+            resource_name += ".mp4"
+        try:
+            # Try to format the lecture number to a 2 digit number
+            lecture_number = f"{int(str(lecture_number)):02d}"
+        except ValueError:
+            pass  # not interested, if it's not a number, keep the string as it is
+        return f"{lecture_number}-resource_{resource_name}"
 
     @staticmethod
     def should_overwrite(file_path: Path, noconfirm=False):
@@ -126,7 +143,14 @@ class Lecture(Scraper):
                     self.__download_text(file_path, progress_bar, current_task_id)
         if download_names_urls is not None:
             for download_name, download_url in download_names_urls.items():
-                filename = sterialize_file_or_folder(download_name)
+                if download_name is None:
+                    # get the web page title and use it as the filename
+                    download_name = self.get_name()
+                    filename = sterialize_file_or_folder(
+                        self.get_resource_name(download_name)
+                    )
+                else:
+                    filename = sterialize_file_or_folder(download_name)
                 if filename.split('.')[-1] != 'mp4':
                     # This means that the downloadable thing is a resource so
                     # we use the self.get_resource_name to get the resource name
