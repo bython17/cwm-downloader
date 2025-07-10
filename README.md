@@ -191,4 +191,4 @@ cwm-downloader download --help
 
 ## Contributions
 
-I have tried to document my code very well to make it easy to understand. I am not a pro python engineer by any means just a high school kid who loves to code. So I would greatly appreciate any comments and code reviews from the community and If you have a great feature in mind don't forget to hit that pull request 😁. Thanks
+I have tried to document my code very well to make it easy to understand. I am not a pro python engineer by any means just an enthusiast so I would greatly appreciate any contributions from the community.
