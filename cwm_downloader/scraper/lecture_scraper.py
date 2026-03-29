@@ -185,7 +185,8 @@ class Lecture(Scraper):
         # is not reset the progress bar will continue from where it left of but the download resets
         # which is wierd! right?
         progress_bar.reset(current_task_id, start=False)
-        progress_bar.update(current_task_id, total=int(str(response.headers.get('content-length'))))
+        content_length = response.headers.get('content-length')
+        progress_bar.update(current_task_id, total=int(content_length) if content_length is not None else 0)
         progress_bar.start_task(current_task_id)
 
         with file_path.open('wb') as file:
