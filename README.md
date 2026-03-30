@@ -189,6 +189,48 @@ And you can also see the help message for the download subcommand
 cwm-downloader download --help
 ```
 
+## Subtitles
+
+The downloader can automatically download subtitles and save them as `.srt` files alongside the video. Subtitles are downloaded by default — pass `--no-subtitles` to skip them.
+
+```
+cwm-downloader download <URL> --no-subtitles
+```
+
+Because auth tokens for subtitle tracks are obtained at runtime via JavaScript, subtitle downloading requires a headless Chromium browser managed by [Playwright](https://playwright.dev/python/).
+
+### Installing Playwright
+
+**1. Install the Playwright package**
+
+If you installed cwm-downloader via `pip` or a `.whl` file:
+
+```bash
+pip install playwright
+```
+
+If you are using the manual Poetry setup:
+
+```bash
+poetry add playwright
+```
+
+**2. Install the headless Chromium browser**
+
+```bash
+playwright install chromium
+```
+
+Or, if using Poetry:
+
+```bash
+poetry run playwright install chromium
+```
+
+That's it. The next time you run a download, Playwright will launch Chromium in the background, capture the subtitle track URL, and save the `.srt` file automatically.
+
+> **Note:** If Playwright is not installed, the downloader will print a warning and skip subtitles rather than failing.
+
 ## Contributions
 
 I have tried to document my code very well to make it easy to understand. I am not a pro python engineer by any means just an enthusiast so I would greatly appreciate any contributions from the community.

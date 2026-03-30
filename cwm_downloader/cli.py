@@ -105,14 +105,16 @@ def download(
 
     chunk_size: int = typer.Option(4096, help="The chunk that the app downloads at a time when downloading content."),
 
-    noconfirm: bool = typer.Option(False, '--noconfirm', help="Disable the confirmation when overwriting a file.")
+    noconfirm: bool = typer.Option(False, '--noconfirm', help="Disable the confirmation when overwriting a file."),
+
+    subtitles: bool = typer.Option(False, '--subtitles/--no-subtitles', help="Download subtitle files (SRT) for video lectures.")
 ):
     try:
         # Initialize a request Session using initialize_session which initializes a session
         # by setting the headers and cookies from the credentials.json file for us.
         with initialize_session() as session:
             course_obj = Course(url, session, timeout)
-            _download(course_obj, section_no, lecture_no, only, path, chunk_size=chunk_size, noconfirm=noconfirm)
+            _download(course_obj, section_no, lecture_no, only, path, chunk_size=chunk_size, noconfirm=noconfirm, subtitles=subtitles)
     # This is an error raised by the url validator found in the base abstract class
     # Scraper in _scraper.py
     except IncorrectUrlError:
@@ -122,5 +124,5 @@ def download(
     # This is also raised in the abstract base class Scraper and it is raised when an element selctor
     # cannot be found.
     except ElementNotFoundError:
-        render_message('error', f'The program could\'nt fetch resources. There might be updates to the site or your subscription has ended. Or you might have an invalid cookies')
+        render_message('error', f'The program couldn\'t fetch resources. There might be updates to the site or your subscription has ended. Or you might have an invalid cookies')
         raise typer.Exit(1)
