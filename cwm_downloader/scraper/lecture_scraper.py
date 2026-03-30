@@ -427,13 +427,6 @@ class Lecture(Scraper):
                     # another thask wont be instatiated.
                     current_task_id: TaskID = progress_bar.add_task('download', start=False, filename=str(self))
                     self.__download_text(file_path, progress_bar, current_task_id)
-        if lecture_type == 'video' and subtitles:
-            subtitle_filename = sterialize_file_or_folder(
-                self.get_resource_name(str(self)).rsplit('.', 1)[0] + '.srt'
-            )
-            subtitle_path = base_dir / subtitle_filename
-            if self.should_overwrite(subtitle_path, noconfirm):
-                self.__download_subtitle(subtitle_path)
         if download_names_urls is not None:
             for download_name, download_url in download_names_urls.items():
                 if download_name is None:
@@ -454,6 +447,10 @@ class Lecture(Scraper):
                         # The samething as the text lecture here
                         current_task_id = progress_bar.add_task('download', filename=file_path.stem, start=False)
                         self.__download(download_url, file_path, progress_bar, current_task_id, chunk_size)
+                if subtitles and lecture_type == 'video' and file_path.suffix == '.mp4':
+                    subtitle_path = file_path.with_suffix('.srt')
+                    if self.should_overwrite(subtitle_path, noconfirm):
+                        self.__download_subtitle(subtitle_path)
         elif download_names_urls is None and lecture_type != 'text':
             # No direct download URLs — attempt to capture the HLS stream via Playwright.
             filename = sterialize_file_or_folder(self.get_resource_name(str(self)))
