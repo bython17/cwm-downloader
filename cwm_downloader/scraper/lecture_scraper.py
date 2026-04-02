@@ -249,7 +249,8 @@ class Lecture(Scraper):
                     for attempt in range(max_retries):
                         try:
                             seg_resp = context.request.get(seg_url, headers=cdn_headers)
-                            vtt_parts.append(seg_resp.text())
+                            raw = seg_resp.body()
+                            vtt_parts.append(raw.decode('utf-8', errors='replace'))
                             break
                         except (TimeoutError, PlaywrightTimeoutError):
                             if attempt == max_retries - 1:
